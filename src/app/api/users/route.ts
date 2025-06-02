@@ -20,6 +20,18 @@ export const POST = async (req: NextRequest): Promise<NextResponse> => {
         { status: 400 }
       );
     }
+    const existingUser = await prisma.users.findUnique({
+      where: {
+        email: body.email,
+      },
+    });
+    if (existingUser?.email) {
+      return NextResponse.json(
+        { message: "User already exists" },
+        { status: 400 }
+      );
+    }
+
     const hashedPassword = await encryptPassword(body.password);
 
     const user = await prisma.users.create({

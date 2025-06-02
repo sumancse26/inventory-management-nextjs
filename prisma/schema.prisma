@@ -13,7 +13,7 @@ model users {
     last_name           String      @db.VarChar(50)
     email               String      @unique  @db.VarChar(50)
     mobile              String      @db.VarChar(20)
-    password            String      @db.VarChar(50)
+    password            String      
     otp                 String      @db.VarChar(10)
     created_at          DateTime    @default(now())
     updated_at          DateTime    @updatedAt

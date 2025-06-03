@@ -1,5 +1,6 @@
 import prisma from "@/config/prisma";
 import { decryptPassword, jwtEncode } from "@/utils";
+import { cookies } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
 interface loginInfo {
   email: string;
@@ -12,6 +13,7 @@ interface jwtPayload {
   user_id: number | string;
   role: string;
 }
+
 export const POST = async (req: NextRequest): Promise<NextResponse> => {
   try {
     const data: loginInfo = await req.json();
@@ -51,6 +53,16 @@ export const POST = async (req: NextRequest): Promise<NextResponse> => {
       role: "",
     };
     const token = await jwtEncode(payload);
+
+    //setting cookie in server side
+    const cookieStore = await cookies();
+    cookieStore.set({
+      name: "token",
+      value: token,
+      maxAge: 60 * 60 * 24 * 7,
+      httpOnly: true,
+      path: "/",
+    });
 
     return NextResponse.json({
       message: "Login successful",

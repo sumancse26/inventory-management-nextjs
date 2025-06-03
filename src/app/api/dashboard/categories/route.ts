@@ -3,12 +3,19 @@ import { NextRequest, NextResponse } from "next/server";
 
 type CategoryBody = {
   name: string;
-  user_id: number;
 };
 
 export const POST = async (req: NextRequest): Promise<NextResponse> => {
   try {
     const body: CategoryBody = await req.json();
+    const userId = req.headers.get("user_id");
+
+    if (!userId) {
+      return NextResponse.json(
+        { message: "Unauthorized user" },
+        { status: 400 }
+      );
+    }
 
     if (!body.name) {
       return NextResponse.json(
@@ -20,7 +27,7 @@ export const POST = async (req: NextRequest): Promise<NextResponse> => {
     const category = await prisma.categories.create({
       data: {
         name: body.name,
-        user_id: body.user_id,
+        user_id: Number(userId),
       },
       select: {
         id: true,
@@ -42,5 +49,95 @@ export const POST = async (req: NextRequest): Promise<NextResponse> => {
       { error: "Internal server error" },
       { status: 500 }
     );
+  }
+};
+
+export const GET = async (req: NextRequest): Promise<NextResponse> => {
+  try {
+    const userId = req.headers.get("user_id");
+    const categories = await prisma.categories.findMany({
+      where: {
+        user_id: Number(userId),
+      },
+      select: {
+        id: true,
+        name: true,
+      },
+      orderBy: {
+        name: "asc",
+      },
+    });
+    return NextResponse.json(
+      { message: "Success", data: categories },
+      { status: 200 }
+    );
+  } catch (err) {
+    console.log(err);
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 }
+    );
+  }
+};
+
+export const PUT = async (req: NextRequest): Promise<NextResponse> => {
+  try {
+    const userId = req.headers.get("user_id");
+    if (!userId) {
+      return NextResponse.json(
+        { message: "Unauthorized user" },
+        { status: 400 }
+      );
+    }
+    const body = await req.json();
+    const category = await prisma.categories.update({
+      where: {
+        id: Number(body.id),
+        user_id: Number(userId),
+      },
+      data: {
+        name: body.name,
+      },
+      select: {
+        id: true,
+        name: true,
+      },
+    });
+    return NextResponse.json(
+      { message: "Success", data: category },
+      { status: 200 }
+    );
+  } catch (err) {
+    console.log(err);
+    return NextResponse.json({
+      error: "Internal server error",
+      status: 500,
+    });
+  }
+};
+
+export const DELETE = async (req: NextRequest): Promise<NextResponse> => {
+  try {
+    const userId = req.headers.get("user_id");
+    if (!userId) {
+      return NextResponse.json(
+        { message: "Unauthorized user" },
+        { status: 400 }
+      );
+    }
+    const body = await req.json();
+    await prisma.categories.delete({
+      where: {
+        id: Number(body.id),
+        user_id: Number(userId),
+      },
+    });
+    return NextResponse.json({ message: "Success" }, { status: 200 });
+  } catch (err) {
+    console.log(err);
+    return NextResponse.json({
+      error: "Internal server error",
+      status: 500,
+    });
   }
 };

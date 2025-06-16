@@ -42,6 +42,7 @@ model products {
     category_id         Int        
     name                String              @db.VarChar(100)
     price               String              @db.VarChar(50)
+    qty                 Int                 @default(0)
     unit                String              @db.VarChar(50)
     img_url             String              @db.VarChar(100)
     created_at          DateTime            @default(now())

@@ -43,6 +43,7 @@ model products {
     name                String              @db.VarChar(100)
     price               String              @db.VarChar(50)
     qty                 Int                 @default(0)
+    available_stock     Int                 @default(0)
     unit                String              @db.VarChar(50)
     img_url             String              @db.VarChar(100)
     created_at          DateTime            @default(now())
@@ -70,7 +71,8 @@ model invoices {
     id                  Int         @id @default(autoincrement())
     total               String      @db.VarChar(50)
     discount            String      @db.VarChar(50)
-    vat                 String      @db.VarChar(50)
+    vat_pct             Int         @default(0)
+    vat_amount          Int         @default(0)
     payable             String      @db.VarChar(50) 
     user_id             Int
     customer_id         Int 
@@ -95,6 +97,4 @@ model invoice_products {
   invoice               invoices  @relation(fields: [invoice_id], references: [id], onUpdate: Cascade, onDelete: Restrict)
   product               products  @relation(fields: [product_id], references: [id], onUpdate: Cascade, onDelete: Restrict)
   user                  users     @relation(fields: [user_id], references: [id], onUpdate: Cascade, onDelete: Restrict)
-
-  
 }

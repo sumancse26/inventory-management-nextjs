@@ -1,130 +1,145 @@
+// Icons defined outside to avoid hydration issues
+const UserIcon = () => (
+  <svg
+    className="w-6 h-6 text-white"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    viewBox="0 0 24 24"
+  >
+    <path d="M17 21v-2a4 4 0 0 0-3-3.87" />
+    <path d="M7 21v-2a4 4 0 0 1 3-3.87" />
+    <path d="M12 7a4 4 0 1 1 0 8a4 4 0 0 1 0-8z" />
+  </svg>
+);
+
+const ProductIcon = () => (
+  <svg
+    className="w-6 h-6 text-white"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    viewBox="0 0 24 24"
+  >
+    <path d="M20 6H4v12h16V6z" />
+    <path d="M22 6L12 13 2 6" />
+  </svg>
+);
+
+const InvoiceIcon = () => (
+  <svg
+    className="w-6 h-6 text-white"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    viewBox="0 0 24 24"
+  >
+    <path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01" />
+  </svg>
+);
+
+const SaleIcon = () => (
+  <svg
+    className="w-6 h-6 text-white"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    viewBox="0 0 24 24"
+  >
+    <path d="M12 8c-1.333 0-4 1-4 4s2.667 4 4 4 4-1 4-4-2.667-4-4-4z" />
+    <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41" />
+  </svg>
+);
+
+const CollectionIcon = () => (
+  <svg
+    className="w-6 h-6 text-white"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    viewBox="0 0 24 24"
+  >
+    <path d="M12 8c-2.21 0-4 1.343-4 3s1.79 3 4 3 4-1.343 4-3-1.79-3-4-3z" />
+    <path d="M4 8v8h4v-8H4zm12 0v8h4v-8h-4z" />
+  </svg>
+);
+
+// Dashboard Component
 const Dashboard = () => {
+  const cards = [
+    {
+      label: "Total Users",
+      value: "100",
+      tooltip: "The number of daily users",
+      color: "bg-blue-500",
+      icon: <UserIcon />,
+    },
+    {
+      label: "Products",
+      value: "150",
+      color: "bg-green-500",
+      icon: <ProductIcon />,
+    },
+    {
+      label: "Total Invoices",
+      value: "1200",
+      color: "bg-yellow-500",
+      icon: <InvoiceIcon />,
+    },
+    {
+      label: "Total Sale",
+      value: "1500",
+      color: "bg-red-500",
+      icon: <SaleIcon />,
+    },
+    {
+      label: "Total Collections",
+      value: "2,500,000",
+      color: "bg-indigo-500",
+      icon: <CollectionIcon />,
+    },
+  ];
+
   return (
-    <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
-      <div className="flex flex-col bg-white border shadow-sm rounded-xl dark:bg-neutral-800 dark:border-neutral-700">
-        <div className="p-4 md:p-5">
-          <div className="flex items-center gap-x-2">
-            <p className="text-xs uppercase tracking-wide text-gray-500 dark:text-neutral-500">
-              Total users
-            </p>
-            <div className="hs-tooltip">
-              <div className="hs-tooltip-toggle">
-                <svg
-                  className="shrink-0 size-4 text-gray-500 dark:text-neutral-500"
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="24"
-                  height="24"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <circle cx="12" cy="12" r="10" />
-                  <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" />
-                  <path d="M12 17h.01" />
-                </svg>
-                <span
-                  className="hs-tooltip-content hs-tooltip-shown:opacity-100 hs-tooltip-shown:visible opacity-0 transition-opacity inline-block absolute invisible z-10 py-1 px-2 bg-gray-900 text-xs font-medium text-white rounded shadow-sm dark:bg-neutral-700"
-                  role="tooltip"
-                >
-                  The number of daily users
-                </span>
-              </div>
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+      {cards.map((card, idx) => (
+        <div
+          key={idx}
+          className="flex items-center justify-between p-4 sm:p-5 rounded-2xl shadow-md bg-white dark:bg-neutral-800 border border-gray-200 dark:border-neutral-700 transition hover:shadow-lg"
+        >
+          <div className="flex-1">
+            <div className="text-sm font-medium text-gray-500 dark:text-neutral-400 uppercase tracking-wide flex items-center gap-1">
+              {card.label}
+              {card.tooltip && (
+                <div className="group relative cursor-pointer">
+                  <svg
+                    className="w-4 h-4 text-gray-400 dark:text-neutral-500"
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <circle cx="12" cy="12" r="10" />
+                    <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" />
+                    <path d="M12 17h.01" />
+                  </svg>
+                  <div className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 hidden group-hover:block text-xs text-white bg-gray-900 dark:bg-neutral-700 px-2 py-1 rounded shadow">
+                    {card.tooltip}
+                  </div>
+                </div>
+              )}
             </div>
-          </div>
-
-          <div className="mt-1 flex items-center gap-x-2">
-            <span className="flex items-center gap-x-1 text-green-600">
-              <svg
-                className="inline-block size-4 self-center"
-                xmlns="http://www.w3.org/2000/svg"
-                width="24"
-                height="24"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <polyline points="22 7 13.5 15.5 8.5 10.5 2 17" />
-                <polyline points="16 7 22 7 22 13" />
-              </svg>
-              <span className="inline-block text-sm">
-                <h3 className="text-xl sm:text-2xl font-medium text-gray-800 dark:text-neutral-200">
-                  100
-                </h3>
-              </span>
-            </span>
-          </div>
-        </div>
-      </div>
-
-      <div className="flex flex-col bg-white border shadow-sm rounded-xl dark:bg-neutral-800 dark:border-neutral-700">
-        <div className="p-4 md:p-5">
-          <div className="flex items-center gap-x-2">
-            <p className="text-xs uppercase tracking-wide text-gray-500 dark:text-neutral-500">
-              Products
-            </p>
-          </div>
-
-          <div className="mt-1 flex items-center gap-x-2">
-            <h3 className="text-xl sm:text-2xl font-medium text-gray-800 dark:text-neutral-200">
-              150
+            <h3 className="text-2xl font-semibold text-gray-800 dark:text-white mt-1 sm:mt-2">
+              {card.value}
             </h3>
           </div>
-        </div>
-      </div>
-
-      <div className="flex flex-col bg-white border shadow-sm rounded-xl dark:bg-neutral-800 dark:border-neutral-700">
-        <div className="p-4 md:p-5">
-          <div className="flex items-center gap-x-2">
-            <p className="text-xs uppercase tracking-wide text-gray-500 dark:text-neutral-500">
-              Total Invoices
-            </p>
-          </div>
-
-          <div className="mt-1 flex items-center gap-x-2">
-            <h3 className="text-xl sm:text-2xl font-medium text-gray-800 dark:text-neutral-200">
-              1200
-            </h3>
+          <div
+            className={`ml-4 p-3 sm:p-4 rounded-full ${card.color} flex items-center justify-center`}
+          >
+            {card.icon}
           </div>
         </div>
-      </div>
-
-      <div className="flex flex-col bg-white border shadow-sm rounded-xl dark:bg-neutral-800 dark:border-neutral-700">
-        <div className="p-4 md:p-5">
-          <div className="flex items-center gap-x-2">
-            <p className="text-xs uppercase tracking-wide text-gray-500 dark:text-neutral-500">
-              Total Sale
-            </p>
-          </div>
-
-          <div className="mt-1 flex items-center gap-x-2">
-            <h3 className="text-xl sm:text-2xl font-medium text-gray-800 dark:text-neutral-200">
-              1500
-            </h3>
-          </div>
-        </div>
-      </div>
-
-      <div className="flex flex-col bg-white border shadow-sm rounded-xl dark:bg-neutral-800 dark:border-neutral-700">
-        <div className="p-4 md:p-5">
-          <div className="flex items-center gap-x-2">
-            <p className="text-xs uppercase tracking-wide text-gray-500 dark:text-neutral-500">
-              Total Collections
-            </p>
-          </div>
-
-          <div className="mt-1 flex items-center gap-x-2">
-            <h3 className="text-xl sm:text-2xl font-medium text-gray-800 dark:text-neutral-200">
-              2500000
-            </h3>
-          </div>
-        </div>
-      </div>
+      ))}
     </div>
   );
 };

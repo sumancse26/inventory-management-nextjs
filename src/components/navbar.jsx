@@ -37,7 +37,7 @@ const Nav = () => {
             {/* Dashboard */}
             <li>
               <Link
-                href="#"
+                href="/dashboard"
                 className="flex items-center p-3 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-200 group"
               >
                 <svg

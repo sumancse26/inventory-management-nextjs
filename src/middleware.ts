@@ -1,34 +1,43 @@
 import { jwtVerify } from "jose";
+import { cookies } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function middleware(req: NextRequest) {
-  const token = req.cookies.get("token")?.value;
+  const { pathname } = req.nextUrl;
 
-  if (req.nextUrl.pathname.startsWith("/api/dashboard")) {
-    if (!token) {
-      return NextResponse.redirect(new URL("/login", req.url));
-    }
+  const isProtected =
+    pathname.startsWith("/dashboard") ||
+    pathname.startsWith("/api/dashboard") ||
+    pathname.startsWith("/api/auth");
 
-    try {
-      const secret = new TextEncoder().encode(process.env.JWT_SECRET);
-      const decodedToken = await jwtVerify(token, secret);
-      const user_id = decodedToken.payload.user_id as string;
-      const email = decodedToken.payload.email as string;
+  if (!isProtected) {
+    return NextResponse.next();
+  }
+  const cookieStore = await cookies();
+  const token = cookieStore.get("token")?.value || req.headers.get("token");
 
-      const requestHeaders = new Headers(req.headers);
-      requestHeaders.set("user_id", user_id);
-      requestHeaders.set("email", email);
-
-      return NextResponse.next({
-        request: {
-          headers: requestHeaders,
-        },
-      });
-    } catch (error) {
-      console.log(error);
-      return NextResponse.redirect(new URL("/login", req.url));
-    }
+  if (!token) {
+    return NextResponse.json({ error: "Unauthorized user" }, { status: 401 });
   }
 
-  return NextResponse.next();
+  try {
+    const secret = new TextEncoder().encode(process.env.JWT_SECRET);
+    const { payload } = await jwtVerify(token, secret);
+
+    const user_id = payload.user_id as string;
+    const email = payload.email as string;
+
+    const requestHeaders = new Headers(req.headers);
+    requestHeaders.set("user_id", user_id);
+    requestHeaders.set("email", email);
+
+    return NextResponse.next({
+      request: {
+        headers: requestHeaders,
+      },
+    });
+  } catch (error) {
+    console.error("JWT verification failed:", error);
+    return NextResponse.json({ error: "Unauthorized user" }, { status: 401 });
+  }
 }

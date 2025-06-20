@@ -11,6 +11,7 @@ model users {
     id                  Int         @id @default(autoincrement())
     first_name          String      @db.VarChar(50)
     last_name           String      @db.VarChar(50)
+    image               String?     @default("") @db.VarChar(100)
     email               String      @unique  @db.VarChar(50)
     mobile              String      @db.VarChar(20)
     password            String      
@@ -45,7 +46,7 @@ model products {
     qty                 Int                 @default(0)
     available_stock     Int                 @default(0)
     unit                String              @db.VarChar(50)
-    img_url             String              @db.VarChar(100)
+    img_url             String?              @default("") @db.VarChar(100)
     created_at          DateTime            @default(now())
     updated_at          DateTime            @updatedAt
 
@@ -57,7 +58,7 @@ model products {
 model customers {
     id                  Int          @id @default(autoincrement())
     name                String       @db.VarChar(50)
-    email               String       @db.VarChar(50)
+    email               String?      @db.VarChar(50)
     mobile              String       @db.VarChar(50)
     user_id             Int        
     created_at          DateTime     @default(now())

@@ -14,7 +14,13 @@ interface UserBody {
 export const POST = async (req: NextRequest): Promise<NextResponse> => {
   try {
     const body: UserBody = await req.json();
-    if (!body.first_name || !body.email || !body.password) {
+    if (
+      !body.first_name ||
+      !body.last_name ||
+      !body.mobile ||
+      !body.email ||
+      !body.password
+    ) {
       return NextResponse.json(
         { error: "Missing required fields" },
         { status: 400 }
@@ -27,7 +33,7 @@ export const POST = async (req: NextRequest): Promise<NextResponse> => {
     });
     if (existingUser?.email) {
       return NextResponse.json(
-        { message: "User already exists" },
+        { message: "User already exists", success: false },
         { status: 400 }
       );
     }
@@ -48,6 +54,7 @@ export const POST = async (req: NextRequest): Promise<NextResponse> => {
     return NextResponse.json(
       {
         message: "User created successfully",
+        success: true,
         data: {
           id: user.id,
           first_name: user.first_name,

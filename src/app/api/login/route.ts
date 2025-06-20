@@ -66,6 +66,7 @@ export const POST = async (req: NextRequest): Promise<NextResponse> => {
 
     return NextResponse.json({
       message: "Login successful",
+      success: true,
       data: {
         id: selectedUser.id,
         name: `${selectedUser.first_name} ${selectedUser.last_name}`,

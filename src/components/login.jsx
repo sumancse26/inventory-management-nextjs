@@ -1,9 +1,41 @@
 "use client";
 import { loginAction } from "@/app/actions/authAction";
-import { useActionState } from "react";
+import Cookies from "js-cookie";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
 
 const Login = () => {
-  const [state, formAction] = useActionState(loginAction, null);
+  const [formData, setFormData] = useState({
+    email: "",
+    password: "",
+  });
+  const router = useRouter();
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData({ ...formData, [name]: value });
+  };
+
+  const handleFormSubmit = async (e) => {
+    e.preventDefault();
+
+    const result = await loginAction(null, formData);
+    if (result && result.success) {
+      alert("Login successful!");
+      setFormData({
+        email: "",
+        password: "",
+      });
+      Cookies.set("token", result.token, {
+        secure: true,
+        expires: 7,
+        path: "/",
+      });
+      router.push("/dashboard");
+    } else {
+      alert(result.message);
+    }
+  };
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-100 p-6">
@@ -17,7 +49,7 @@ const Login = () => {
           </p>
           <p className="text-sm">
             Not a member?
-            <a href="/register" className="underline">
+            <a href="/register" className="underline px-2 text-red-700">
               Sign up now
             </a>
             and join our community.
@@ -29,7 +61,7 @@ const Login = () => {
           <h2 className="text-2xl font-bold text-gray-800 mb-6 text-center">
             Login
           </h2>
-          <form className="space-y-6" action={formAction}>
+          <form className="space-y-6" onSubmit={handleFormSubmit}>
             <div>
               <label className="block text-sm font-medium text-gray-600 mb-1">
                 Email Address
@@ -38,6 +70,10 @@ const Login = () => {
                 type="email"
                 placeholder="you@example.com"
                 name="email"
+                value={formData.email}
+                required
+                autoComplete="email"
+                onChange={handleChange}
                 className="w-full px-4 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
             </div>
@@ -49,6 +85,10 @@ const Login = () => {
               <input
                 type="password"
                 name="password"
+                value={formData.password}
+                required
+                autoComplete="current-password"
+                onChange={handleChange}
                 placeholder="Enter your password"
                 className="w-full px-4 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
@@ -63,7 +103,7 @@ const Login = () => {
                 <span className="ml-2">Remember me</span>
               </label>
               <a
-                href="/forgot-password"
+                href="/auth/reset-password"
                 className="text-sm text-blue-500 hover:underline"
               >
                 Forgot Password?

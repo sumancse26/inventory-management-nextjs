@@ -1,7 +1,52 @@
+"use client";
+
+import { registerAction } from "@/app/actions/authAction";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
+
 const SignUp = () => {
+  const [formData, setFormData] = useState({
+    email: "",
+    first_name: "",
+    last_name: "",
+    mobile: "",
+    password: "",
+    image: "",
+  });
+  const router = useRouter();
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData({ ...formData, [name]: value });
+  };
+
+  const handleFormSubmit = async (e) => {
+    e.preventDefault();
+
+    const result = await registerAction(null, formData);
+    if (result && result.success) {
+      alert("Registration successful. Welcome aboard!");
+      setFormData({
+        email: "",
+        first_name: "",
+        last_name: "",
+        mobile: "",
+        password: "",
+        image: "",
+      });
+
+      router.push("/auth/login");
+    } else {
+      alert(result.message);
+    }
+  };
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-purple-100 p-4">
-      <form className="bg-white shadow-2xl rounded-3xl p-10 w-full max-w-4xl animate-fade-in">
+      <form
+        className="bg-white shadow-2xl rounded-3xl p-10 w-full max-w-4xl animate-fade-in"
+        onSubmit={handleFormSubmit}
+      >
         <h2 className="text-3xl font-extrabold text-gray-800 text-center mb-4">
           Create Your Account
         </h2>
@@ -12,23 +57,29 @@ const SignUp = () => {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
           <div>
             <label className="block text-sm font-semibold text-gray-700 mb-2">
-              Email Address
+              Email Address <span className="text-red-500">*</span>
             </label>
             <input
               type="email"
               name="email"
               placeholder="admin@gmail.com"
+              required
+              value={formData.email}
+              onChange={handleChange}
               className="w-full px-4 py-2.5 border border-gray-300 rounded-xl shadow-sm focus:outline-none focus:ring-1 focus:ring-indigo-500"
             />
           </div>
 
           <div>
             <label className="block text-sm font-semibold text-gray-700 mb-2">
-              First Name
+              First Name <span className="text-red-500">*</span>
             </label>
             <input
               type="text"
-              name="firstName"
+              name="first_name"
+              required
+              value={formData.first_name}
+              onChange={handleChange}
               placeholder="First Name"
               className="w-full px-4 py-2.5 border border-gray-300 rounded-xl shadow-sm focus:outline-none focus:ring-1 focus:ring-indigo-500"
             />
@@ -36,11 +87,14 @@ const SignUp = () => {
 
           <div>
             <label className="block text-sm font-semibold text-gray-700 mb-2">
-              Last Name
+              Last Name <span className="text-red-500">*</span>
             </label>
             <input
               type="text"
-              name="lastName"
+              name="last_name"
+              required
+              value={formData.last_name}
+              onChange={handleChange}
               placeholder="Last Name"
               className="w-full px-4 py-2.5 border border-gray-300 rounded-xl shadow-sm focus:outline-none focus:ring-1 focus:ring-indigo-500"
             />
@@ -48,11 +102,14 @@ const SignUp = () => {
 
           <div>
             <label className="block text-sm font-semibold text-gray-700 mb-2">
-              Mobile Number
+              Mobile Number <span className="text-red-500">*</span>
             </label>
             <input
-              type="text"
+              type="tel"
               name="mobile"
+              required
+              value={formData.mobile}
+              onChange={handleChange}
               placeholder="Mobile"
               className="w-full px-4 py-2.5 border border-gray-300 rounded-xl shadow-sm focus:outline-none focus:ring-1 focus:ring-indigo-500"
             />
@@ -60,12 +117,15 @@ const SignUp = () => {
 
           <div className="sm:col-span-2 lg:col-span-1">
             <label className="block text-sm font-semibold text-gray-700 mb-2">
-              Password
+              Password <span className="text-red-500">*</span>
             </label>
             <input
               type="password"
               name="password"
+              value={formData.password}
+              onChange={handleChange}
               placeholder="Password"
+              required
               className="w-full px-4 py-2.5 border border-gray-300 rounded-xl shadow-sm focus:outline-none focus:ring-1 focus:ring-indigo-500"
             />
           </div>

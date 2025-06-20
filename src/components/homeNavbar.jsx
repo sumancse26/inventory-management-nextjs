@@ -14,9 +14,9 @@ const HomeNavbar = () => {
             width={36}
             height={36}
           />
-          <span className="text-2xl font-bold text-purple-600">
+          {/* <span className="text-2xl font-bold text-purple-600">
             SalesInventory
-          </span>
+          </span> */}
         </Link>
 
         <div className="space-x-6 hidden md:flex">
@@ -27,22 +27,22 @@ const HomeNavbar = () => {
             Home
           </Link>
           <Link
-            href="/products"
-            className="text-gray-700 hover:text-purple-600 transition"
-          >
-            Products
-          </Link>
-          <Link
-            href="/invoices"
-            className="text-gray-700 hover:text-purple-600 transition"
-          >
-            Invoices
-          </Link>
-          <Link
             href="/about"
             className="text-gray-700 hover:text-purple-600 transition"
           >
             About
+          </Link>
+          <Link
+            href="/login"
+            className="text-gray-700 hover:text-purple-600 transition"
+          >
+            Login
+          </Link>
+          <Link
+            href="/register"
+            className="text-gray-700 hover:text-purple-600 transition"
+          >
+            SignUp
           </Link>
         </div>
       </div>

@@ -5,21 +5,15 @@ import { NextRequest, NextResponse } from "next/server";
 type ResetPasswordType = {
   otp: string;
   password: string;
+  email: string;
 };
 export const POST = async (req: NextRequest): Promise<NextResponse> => {
   try {
-    const userId = req.headers.get("user_id");
-    if (!userId) {
-      return NextResponse.json(
-        { message: "Unauthorized user" },
-        { status: 401 }
-      );
-    }
-    const { otp, password }: ResetPasswordType = await req.json();
+    const { otp, password, email }: ResetPasswordType = await req.json();
     const hashedPassword = await encryptPassword(password);
 
     const user = await prisma.users.findUnique({
-      where: { id: Number(userId) },
+      where: { email: email },
     });
 
     if (!otp || !password) {
@@ -30,22 +24,22 @@ export const POST = async (req: NextRequest): Promise<NextResponse> => {
       return NextResponse.json({ message: "User not found" }, { status: 404 });
     }
 
-    if (user.otp == otp) {
-      await prisma.users.update({
-        where: { id: Number(user.id) },
-        data: {
-          password: hashedPassword,
-          otp: "0",
-        },
-      });
-
-      return NextResponse.json(
-        { success: true, message: "Password reset successful." },
-        { status: 200 }
-      );
+    if (user.otp != otp) {
+      return NextResponse.json({ message: "Invalid OTP" }, { status: 400 });
     }
 
-    return NextResponse.json({ message: "Unauthorized user" }, { status: 401 });
+    await prisma.users.update({
+      where: { id: Number(user.id) },
+      data: {
+        password: hashedPassword,
+        otp: "0",
+      },
+    });
+
+    return NextResponse.json(
+      { success: true, message: "Password reset successful." },
+      { status: 200 }
+    );
   } catch (err) {
     console.error("Error in ResetPassword API:", err);
     return NextResponse.json(

@@ -1,6 +1,8 @@
 "use client";
 import { loginAction } from "@/app/actions/authAction";
+import { useAlert } from "@/context/AlertContext";
 import Cookies from "js-cookie";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
@@ -10,6 +12,7 @@ const Login = () => {
     password: "",
   });
   const router = useRouter();
+  const { showAlert } = useAlert();
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -21,7 +24,7 @@ const Login = () => {
 
     const result = await loginAction(null, formData);
     if (result && result.success) {
-      alert("Login successful!");
+      showAlert(result.message, "success");
       setFormData({
         email: "",
         password: "",
@@ -33,7 +36,7 @@ const Login = () => {
       });
       router.push("/dashboard");
     } else {
-      alert(result.message);
+      showAlert(result.message, "error");
     }
   };
 
@@ -102,12 +105,12 @@ const Login = () => {
                 />
                 <span className="ml-2">Remember me</span>
               </label>
-              <a
-                href="/auth/reset-password"
+              <Link
+                href="/reset-password"
                 className="text-sm text-blue-500 hover:underline"
               >
                 Forgot Password?
-              </a>
+              </Link>
             </div>
 
             <button

@@ -1,6 +1,14 @@
 "use server";
 import { mailOptions, transporter } from "@/config/nodemailer";
-import { login, register, submitOtp, verifyOtp } from "@/services/inventory";
+import {
+  doLogout,
+  getProfile,
+  login,
+  register,
+  submitOtp,
+  updateProfile,
+  verifyOtp,
+} from "@/services/inventory";
 export const loginAction = async (prevState, formData) => {
   if (!formData) return prevState;
 
@@ -29,23 +37,23 @@ export const mailSendingAction = async (prevState, email, otp) => {
     });
 
     if (Array.isArray(res.accepted) && res.accepted.length > 0) {
-      return { success: true, message: "Email sent successfully" };
+      return { success: true, message: "Otp sent successfully", email };
     } else {
-      return { success: false, message: "Email not sent" };
+      return { success: false, message: "Otp not sent" };
     }
   } catch (error) {
     return {
       success: false,
-      message: "Failed to send password reset email",
+      message: "Failed to send Otp",
+
       error: error.message || String(error),
     };
   }
 };
 
-export const otpVerificationAction = async (prevState, otp) => {
+export const otpVerificationAction = async (prevState, otp, email) => {
   if (!otp) return prevState;
-
-  const result = await verifyOtp({ otp });
+  const result = await verifyOtp({ otp, email });
   return await result;
 };
 
@@ -54,4 +62,19 @@ export const submitOtpAction = async (prevState, formData) => {
 
   const result = await submitOtp(formData);
   return result;
+};
+
+export const doLogoutAction = async () => {
+  await doLogout();
+  return { success: true, message: "Logged out successfully" };
+};
+
+export const getProfileAction = async () => {
+  const result = await getProfile();
+  return result;
+};
+
+export const updateProfileAction = async (data) => {
+  const res = await updateProfile(data);
+  return res;
 };

@@ -1,29 +1,33 @@
 "use client";
 
 import { submitOtpAction } from "@/app/actions/authAction";
+import { useAlert } from "@/context/AlertContext";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
 const ForgotPassword = () => {
   const [otp, setOtp] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const router = useRouter();
+  const { showAlert } = useAlert();
+  const searchParams = useSearchParams();
 
   const handleSubmit = async (event) => {
     event.preventDefault();
 
+    const email = searchParams.get("email");
     const formData = {
       otp: otp,
       password: newPassword,
+      email,
     };
 
     const res = await submitOtpAction(null, formData);
-    console.log("dfkhgfdghkj", res);
     if (res.success) {
-      alert("OTP verified successfully!");
+      showAlert(res.message, "success");
       router.push("/dashboard");
     } else {
-      alert("OTP verification failed.");
+      showAlert(res.message, "error");
     }
   };
 
@@ -74,7 +78,7 @@ const ForgotPassword = () => {
 
         <div className="text-center mt-6">
           <Link
-            href="/auth/reset-password"
+            href="/reset-password"
             className="text-sm text-purple-600 hover:text-purple-800 transition-colors duration-200 hover:underline"
           >
             ← Back to Forgot Password

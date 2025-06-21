@@ -1,3 +1,5 @@
+import { AlertProvider } from "@/context/AlertContext";
+import Alert from "@components/alert";
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
@@ -33,7 +35,10 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        {children}
+        <AlertProvider>
+          <Alert />
+          {children}
+        </AlertProvider>
       </body>
     </html>
   );

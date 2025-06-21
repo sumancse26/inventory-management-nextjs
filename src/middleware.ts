@@ -7,6 +7,7 @@ export async function middleware(req: NextRequest) {
 
   const isProtected =
     pathname.startsWith("/dashboard") ||
+    pathname.startsWith("/auth") ||
     pathname.startsWith("/api/dashboard") ||
     pathname.startsWith("/api/auth");
 
@@ -14,10 +15,17 @@ export async function middleware(req: NextRequest) {
     return NextResponse.next();
   }
   const cookieStore = await cookies();
-  const token = cookieStore.get("token")?.value || req.headers.get("token");
+
+  const authHeader = req.headers.get("Authorization");
+  const apiToken = authHeader?.startsWith("Bearer ")
+    ? authHeader.split(" ")[1]
+    : null;
+
+  const token = cookieStore.get("token")?.value || apiToken;
+  // const token = cookieStore.get("token")?.value || req.headers.get("token");
 
   if (!token) {
-    return NextResponse.json({ error: "Unauthorized user" }, { status: 401 });
+    return NextResponse.redirect(new URL("/login", req.url));
   }
 
   try {
@@ -38,6 +46,6 @@ export async function middleware(req: NextRequest) {
     });
   } catch (error) {
     console.error("JWT verification failed:", error);
-    return NextResponse.json({ error: "Unauthorized user" }, { status: 401 });
+    return NextResponse.redirect(new URL("/login", req.url));
   }
 }

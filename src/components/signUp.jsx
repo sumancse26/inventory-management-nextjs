@@ -1,6 +1,7 @@
 "use client";
 
 import { registerAction } from "@/app/actions/authAction";
+import { useAlert } from "@/context/AlertContext";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
@@ -14,6 +15,7 @@ const SignUp = () => {
     image: "",
   });
   const router = useRouter();
+  const { showAlert } = useAlert();
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -25,7 +27,7 @@ const SignUp = () => {
 
     const result = await registerAction(null, formData);
     if (result && result.success) {
-      alert("Registration successful. Welcome aboard!");
+      showAlert(result.message, "success");
       setFormData({
         email: "",
         first_name: "",
@@ -37,7 +39,7 @@ const SignUp = () => {
 
       router.push("/auth/login");
     } else {
-      alert(result.message);
+      showAlert(result.message, "error");
     }
   };
 

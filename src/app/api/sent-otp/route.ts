@@ -3,27 +3,19 @@ import { NextRequest, NextResponse } from "next/server";
 
 type otpType = {
   otp: string;
+  email: string;
 };
 
 export const POST = async (req: NextRequest): Promise<NextResponse> => {
   try {
     const body: otpType = await req.json();
 
-    const userId = req.headers.get("user_id");
-
-    if (!userId) {
-      return NextResponse.json(
-        { message: "Unauthorized user" },
-        { status: 400 }
-      );
-    }
-
     if (!body.otp) {
       return NextResponse.json({ message: "Otp is required" }, { status: 400 });
     }
 
     const user = await prisma.users.findUnique({
-      where: { id: Number(userId) },
+      where: { email: body.email },
     });
 
     if (!user) {

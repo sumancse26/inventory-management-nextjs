@@ -4,22 +4,26 @@ import {
   mailSendingAction,
   otpVerificationAction,
 } from "@/app/actions/authAction";
+import { useAlert } from "@/context/AlertContext";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 const ForgotPassword = () => {
   const [email, setEmail] = useState("");
   const router = useRouter();
+  const { showAlert } = useAlert();
 
   const handleSubmit = async (event) => {
     event.preventDefault();
 
     const randomOtp = Math.floor(10000 + Math.random() * 90000);
     const res = await mailSendingAction(null, email, randomOtp);
-
     if (res.success) {
-      await otpVerificationAction(null, randomOtp);
-      router.push("/auth/submit-otp");
+      showAlert(res.message, "success");
+      await otpVerificationAction(null, randomOtp, email);
+      router.push(`/submit-otp?email=${email}`);
+    } else {
+      showAlert(res.message, "error");
     }
   };
 

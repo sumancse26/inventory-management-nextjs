@@ -19,7 +19,7 @@ export const register = async (data) => {
 };
 
 export const verifyOtp = async (data) => {
-  const res = await fetchApi("/api/auth/sent-otp", {
+  const res = await fetchApi("/api/sent-otp", {
     method: "POST",
     body: JSON.stringify(data),
   });
@@ -28,9 +28,34 @@ export const verifyOtp = async (data) => {
 };
 
 export const submitOtp = async (data) => {
-  const res = await fetchApi("/api/auth/reset-password", {
+  const res = await fetchApi("/api/reset-password", {
     method: "POST",
     body: JSON.stringify(data),
+  });
+
+  return res;
+};
+
+export const doLogout = async () => {
+  const res = await fetchApi("/api/auth/logout", {
+    method: "GET",
+  });
+
+  return res;
+};
+
+export const getProfile = async () => {
+  const res = await fetchApi("/api/auth/profile", {
+    method: "GET",
+  });
+
+  return res;
+};
+
+export const updateProfile = async (data) => {
+  const res = await fetchApi("/api/auth/profile", {
+    method: "POST",
+    body: data,
   });
 
   return res;

@@ -34,7 +34,7 @@ const CategoryList = () => {
       stop();
     } catch (err) {
       stop();
-      console.error("Error fetching category list:", err);
+      showAlert(err.message, "error");
     }
   };
 
@@ -171,9 +171,9 @@ const CategoryList = () => {
               {/* Footer */}
               <div className="px-6 py-4 flex flex-col md:flex-row justify-between md:items-center gap-3 border-t border-gray-200 dark:border-neutral-700">
                 <p className="text-sm text-gray-600 dark:text-neutral-400">
-                  <span className="font-semibold text-gray-800 dark:text-neutral-200">
-                    12
-                  </span>{" "}
+                  <span className="font-semibold text-gray-800 dark:text-neutral-200 pe-1">
+                    {categories?.length || 0}
+                  </span>
                   results
                 </p>
                 <div className="flex gap-2">

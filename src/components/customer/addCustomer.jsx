@@ -1,4 +1,22 @@
-const AddCustomer = ({ onClose }) => {
+import { useEffect, useState } from "react";
+
+const AddCustomer = ({ onClose, saveCustomer, customer }) => {
+  const [customerInfo, setCustomerInfo] = useState({
+    id: null,
+    name: "",
+    email: "",
+    mobile: "",
+  });
+
+  useEffect(() => {
+    setCustomerInfo(customer);
+  }, [customer]);
+
+  const saveBtnHandler = () => {
+    saveCustomer(customerInfo);
+    onClose(false);
+  };
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
       <div className="bg-white dark:bg-neutral-800 rounded-2xl shadow-2xl w-full max-w-md p-6 relative transform transition-all duration-300 scale-100 animate-fadeIn">
@@ -22,11 +40,11 @@ const AddCustomer = ({ onClose }) => {
 
         {/* Title */}
         <h2 className="text-2xl font-bold text-gray-800 dark:text-white mb-6 text-center">
-          Add New Customer
+          {customerInfo.id ? "Update" : "Add New"} Customer
         </h2>
 
         {/* Form */}
-        <form className="space-y-4">
+        <form className="space-y-4" onSubmit={saveBtnHandler}>
           {/* Name */}
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
@@ -34,6 +52,11 @@ const AddCustomer = ({ onClose }) => {
             </label>
             <input
               type="text"
+              name="name"
+              value={customerInfo.name}
+              onChange={(e) =>
+                setCustomerInfo({ ...customerInfo, name: e.target.value })
+              }
               placeholder="Enter full name"
               className="w-full px-4 py-2 text-sm border rounded-lg border-gray-300 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-gray-800 dark:text-white placeholder-gray-400 dark:placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-purple-500"
             />
@@ -46,6 +69,11 @@ const AddCustomer = ({ onClose }) => {
             </label>
             <input
               type="email"
+              name="email"
+              value={customerInfo.email}
+              onChange={(e) =>
+                setCustomerInfo({ ...customerInfo, email: e.target.value })
+              }
               placeholder="example@domain.com"
               className="w-full px-4 py-2 text-sm border rounded-lg border-gray-300 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-gray-800 dark:text-white placeholder-gray-400 dark:placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-purple-500"
             />
@@ -58,14 +86,20 @@ const AddCustomer = ({ onClose }) => {
             </label>
             <input
               type="tel"
+              name="mobile"
+              value={customerInfo.mobile}
+              onChange={(e) =>
+                setCustomerInfo({ ...customerInfo, mobile: e.target.value })
+              }
               placeholder="01XXXXXXXXX"
               className="w-full px-4 py-2 text-sm border rounded-lg border-gray-300 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-gray-800 dark:text-white placeholder-gray-400 dark:placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-purple-500"
             />
           </div>
 
           {/* Actions */}
-          <div className="flex justify-end gap-3 pt-4">
+          <div className="flex gap-3 pt-4 justify-center">
             <button
+              onClick={() => onClose(false)}
               type="button"
               className="px-4 py-2 text-sm font-medium rounded-lg text-gray-600 bg-gray-100 hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-400 dark:bg-neutral-700 dark:text-gray-300 dark:hover:bg-neutral-600 dark:focus:ring-neutral-500 transition"
             >

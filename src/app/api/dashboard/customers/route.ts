@@ -41,11 +41,18 @@ export const POST = async (req: NextRequest): Promise<NextResponse> => {
         mobile: true,
       },
     });
-    return NextResponse.json({ message: "Success", data }, { status: 200 });
+    return NextResponse.json(
+      { message: "Customers added successfully", success: true, data },
+      { status: 200 }
+    );
   } catch (err) {
     console.log(err);
     return NextResponse.json(
-      { error: "Internal server error" },
+      {
+        error: "Internal server error",
+        success: false,
+        message: "Internal server error",
+      },
       { status: 500 }
     );
   }
@@ -79,13 +86,21 @@ export const PUT = async (req: NextRequest): Promise<NextResponse> => {
       },
     });
     return NextResponse.json(
-      { message: "Success", data: customer },
+      {
+        message: "Customer updated successfully",
+        success: true,
+        data: customer,
+      },
       { status: 200 }
     );
   } catch (err) {
     console.log(err);
     return NextResponse.json(
-      { error: "Internal server error" },
+      {
+        error: "Internal server error",
+        success: false,
+        message: "Internal server error",
+      },
       { status: 500 }
     );
   }
@@ -112,13 +127,21 @@ export const GET = async (req: NextRequest): Promise<NextResponse> => {
       },
     });
     return NextResponse.json(
-      { message: "Success", data: customers },
+      {
+        message: "Customer fetched successfully",
+        success: true,
+        data: customers,
+      },
       { status: 200 }
     );
   } catch (err) {
     console.log(err);
     return NextResponse.json(
-      { error: "Internal server error" },
+      {
+        error: "Internal server error",
+        success: false,
+        message: "Internal server error",
+      },
       { status: 500 }
     );
   }
@@ -140,11 +163,18 @@ export const DELETE = async (req: NextRequest): Promise<NextResponse> => {
         user_id: Number(userId),
       },
     });
-    return NextResponse.json({ message: "Success" }, { status: 200 });
+    return NextResponse.json(
+      { message: "Customer deleted", success: true },
+      { status: 200 }
+    );
   } catch (err) {
     console.log(err);
     return NextResponse.json(
-      { error: "Internal server error" },
+      {
+        error: "Internal server error",
+        success: false,
+        message: "Internal server error",
+      },
       { status: 500 }
     );
   }

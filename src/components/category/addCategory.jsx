@@ -7,6 +7,7 @@ const AddCategory = (props) => {
   useEffect(() => {
     setName(props.category?.name || "");
   }, [props.category?.name]);
+
   const closeModal = () => {
     props.hideModal(false);
   };

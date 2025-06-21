@@ -1,14 +1,95 @@
 "use client";
 
-import { useState } from "react";
+import {
+  addCategoryAction,
+  categoryListAction,
+  deleteCategoryAction,
+  updateCategoryAction,
+} from "@/app/actions/categoryAction";
+import { useAlert } from "@/context/AlertContext";
+import { useApiLoader } from "@/lib/useApiLoader";
+import moment from "moment";
+import { useEffect, useState } from "react";
 import AddCategory from "./addCategory";
 
 const CategoryList = () => {
   const [openModal, setOpenModal] = useState(false);
+  const [categories, setCategories] = useState([]);
+  const [selectedCategory, setSelectedCategory] = useState({});
 
+  const { start, stop } = useApiLoader();
+  const { showAlert } = useAlert();
+
+  useEffect(() => {
+    fetchCategoryList();
+
+    return () => {};
+  }, []);
+
+  const fetchCategoryList = async () => {
+    try {
+      start();
+      const res = await categoryListAction();
+      setCategories(res?.data || []);
+      stop();
+    } catch (err) {
+      stop();
+      console.error("Error fetching category list:", err);
+    }
+  };
+
+  const saveCategoryHandler = async (category) => {
+    try {
+      start();
+      if (selectedCategory?.id) {
+        const res = await updateCategoryAction({
+          name: category,
+          id: selectedCategory?.id,
+        });
+        showAlert(res.message, "success");
+      } else {
+        const res = await addCategoryAction({ name: category });
+        showAlert(res.message, "success");
+      }
+      setOpenModal(false);
+      fetchCategoryList();
+      stop();
+    } catch (err) {
+      showAlert(err.message, "error");
+      stop();
+    }
+  };
+
+  const editCategoryHandler = async (category) => {
+    setSelectedCategory(category);
+    setOpenModal(true);
+  };
+
+  const deleteCategoryHandler = async (category) => {
+    try {
+      start();
+      const res = await deleteCategoryAction(category?.id);
+      showAlert(res.message, "success");
+      if (res.success) {
+        const filteredList = categories.filter((c) => c.id !== category?.id);
+        setCategories(filteredList);
+      }
+      stop();
+    } catch (err) {
+      stop();
+      console.error("Error deleting category:", err);
+    }
+  };
+
+  const openModalHandler = () => {
+    setSelectedCategory({});
+    setOpenModal(true);
+  };
   const hideModalHandler = (val) => {
+    setSelectedCategory({});
     setOpenModal(val);
   };
+
   return (
     <>
       <div className="flex flex-col">
@@ -27,7 +108,7 @@ const CategoryList = () => {
                 </div>
 
                 <button
-                  onClick={() => setOpenModal(true)}
+                  onClick={openModalHandler}
                   className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium bg-gradient-to-r from-blue-500 to-purple-600 text-white font-semibold rounded hover:from-blue-600 hover:to-purple-700 focus:outline-none"
                 >
                   <span className="material-icons text-base">add</span>
@@ -53,25 +134,36 @@ const CategoryList = () => {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-200 dark:divide-neutral-700">
-                    <tr className="hover:bg-gray-50 dark:hover:bg-neutral-700 group transition">
-                      <td className="text-center px-4 py-3 text-sm font-semibold text-gray-800 dark:text-neutral-200">
-                        1
-                      </td>
-                      <td className="px-4 py-3 text-sm font-medium text-gray-800 dark:text-neutral-200">
-                        Category Name
-                      </td>
-                      <td className="px-4 py-3 text-sm text-gray-500 dark:text-neutral-400">
-                        2025-06-17
-                      </td>
-                      <td className="px-4 py-3 flex justify-end gap-2">
-                        <button className="material-icons opacity-0 group-hover:opacity-100 bg-purple-600 hover:bg-purple-700 text-white rounded-full w-8 h-8 flex items-center justify-center transition">
-                          edit
-                        </button>
-                        <button className="material-icons opacity-0 group-hover:opacity-100 bg-red-500 hover:bg-red-600 text-white rounded-full w-8 h-8 flex items-center justify-center transition">
-                          delete
-                        </button>
-                      </td>
-                    </tr>
+                    {categories.map((category, index) => (
+                      <tr
+                        className="hover:bg-gray-50 dark:hover:bg-neutral-700 group transition"
+                        key={index}
+                      >
+                        <td className="text-center px-4 py-3 text-sm font-semibold text-gray-800 dark:text-neutral-200">
+                          {index + 1}
+                        </td>
+                        <td className="px-4 py-3 text-sm font-medium text-gray-800 dark:text-neutral-200">
+                          {category.name}
+                        </td>
+                        <td className="px-4 py-3 text-sm text-gray-500 dark:text-neutral-400">
+                          {moment(category.created_at).format("D MMMM YYYY")}
+                        </td>
+                        <td className="px-4 py-3 flex justify-end gap-2">
+                          <button
+                            onClick={() => editCategoryHandler(category)}
+                            className="material-icons opacity-0 group-hover:opacity-100 bg-purple-600 hover:bg-purple-700 text-white rounded-full w-8 h-8 flex items-center justify-center transition"
+                          >
+                            edit
+                          </button>
+                          <button
+                            onClick={() => deleteCategoryHandler(category)}
+                            className="material-icons opacity-0 group-hover:opacity-100 bg-red-500 hover:bg-red-600 text-white rounded-full w-8 h-8 flex items-center justify-center transition"
+                          >
+                            delete
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
                   </tbody>
                 </table>
               </div>
@@ -101,7 +193,13 @@ const CategoryList = () => {
           </div>
         </div>
 
-        {openModal && <AddCategory hideModal={hideModalHandler} />}
+        {openModal && (
+          <AddCategory
+            category={selectedCategory}
+            saveCategory={saveCategoryHandler}
+            hideModal={hideModalHandler}
+          />
+        )}
       </div>
     </>
   );

@@ -36,7 +36,7 @@ export const POST = async (req: NextRequest): Promise<NextResponse> => {
     });
 
     return NextResponse.json(
-      { message: "Success", data: category },
+      { message: "Category Created", success: true, data: category },
       { status: 200 }
     );
   } catch (error: unknown) {
@@ -46,7 +46,11 @@ export const POST = async (req: NextRequest): Promise<NextResponse> => {
       console.log(String(error));
     }
     return NextResponse.json(
-      { error: "Internal server error" },
+      {
+        error: "Internal server error",
+        success: false,
+        message: "Internal server error",
+      },
       { status: 500 }
     );
   }
@@ -68,13 +72,21 @@ export const GET = async (req: NextRequest): Promise<NextResponse> => {
       },
     });
     return NextResponse.json(
-      { message: "Success", data: categories },
+      {
+        message: "Category fetched successfully",
+        success: true,
+        data: categories,
+      },
       { status: 200 }
     );
   } catch (err) {
     console.log(err);
     return NextResponse.json(
-      { error: "Internal server error" },
+      {
+        error: "Internal server error",
+        message: "Internal server error",
+        success: false,
+      },
       { status: 500 }
     );
   }
@@ -104,7 +116,7 @@ export const PUT = async (req: NextRequest): Promise<NextResponse> => {
       },
     });
     return NextResponse.json(
-      { message: "Success", data: category },
+      { message: "Category updated", success: true, data: category },
       { status: 200 }
     );
   } catch (err) {
@@ -112,6 +124,7 @@ export const PUT = async (req: NextRequest): Promise<NextResponse> => {
     return NextResponse.json({
       error: "Internal server error",
       status: 500,
+      success: false,
     });
   }
 };
@@ -132,11 +145,16 @@ export const DELETE = async (req: NextRequest): Promise<NextResponse> => {
         user_id: Number(userId),
       },
     });
-    return NextResponse.json({ message: "Success" }, { status: 200 });
+    return NextResponse.json(
+      { message: "Category deleted", success: true },
+      { status: 200 }
+    );
   } catch (err) {
     console.log(err);
     return NextResponse.json({
       error: "Internal server error",
+      success: false,
+      message: "Internal server error",
       status: 500,
     });
   }

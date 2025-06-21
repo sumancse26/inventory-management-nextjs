@@ -8,7 +8,7 @@ export const fetchApi = async (endPoint, options = {}) => {
 
   if (isServer()) {
     const { cookies } = await import("next/headers");
-    const cookieStore = cookies();
+    const cookieStore = await cookies();
     token = cookieStore.get("token")?.value || "";
   } else {
     token = Cookies.get("token") || "";

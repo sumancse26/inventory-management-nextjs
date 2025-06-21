@@ -2,6 +2,7 @@
 
 import { submitOtpAction } from "@/app/actions/authAction";
 import { useAlert } from "@/context/AlertContext";
+import { useApiLoader } from "@/lib/useApiLoader";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
@@ -11,6 +12,7 @@ const ForgotPassword = () => {
   const router = useRouter();
   const { showAlert } = useAlert();
   const searchParams = useSearchParams();
+  const { start, stop } = useApiLoader();
 
   const handleSubmit = async (event) => {
     event.preventDefault();
@@ -21,12 +23,14 @@ const ForgotPassword = () => {
       password: newPassword,
       email,
     };
-
+    start();
     const res = await submitOtpAction(null, formData);
+    stop();
     if (res.success) {
       showAlert(res.message, "success");
       router.push("/dashboard");
     } else {
+      setOtp("");
       showAlert(res.message, "error");
     }
   };

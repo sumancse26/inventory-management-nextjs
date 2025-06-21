@@ -2,6 +2,7 @@
 
 import { registerAction } from "@/app/actions/authAction";
 import { useAlert } from "@/context/AlertContext";
+import { useApiLoader } from "@/lib/useApiLoader";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
@@ -16,6 +17,7 @@ const SignUp = () => {
   });
   const router = useRouter();
   const { showAlert } = useAlert();
+  const { start, stop } = useApiLoader();
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -25,6 +27,7 @@ const SignUp = () => {
   const handleFormSubmit = async (e) => {
     e.preventDefault();
 
+    start();
     const result = await registerAction(null, formData);
     if (result && result.success) {
       showAlert(result.message, "success");
@@ -36,9 +39,10 @@ const SignUp = () => {
         password: "",
         image: "",
       });
-
+      stop();
       router.push("/auth/login");
     } else {
+      stop();
       showAlert(result.message, "error");
     }
   };

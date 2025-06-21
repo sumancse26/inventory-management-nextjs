@@ -2,6 +2,7 @@
 
 import { getProfileAction } from "@/app/actions/authAction";
 import { useAlert } from "@/context/AlertContext";
+import { useApiLoader } from "@/lib/useApiLoader";
 import { updateProfile } from "@/services/inventory";
 import { useRouter } from "next/navigation";
 import { NextResponse } from "next/server";
@@ -21,6 +22,7 @@ const UpdateProfile = () => {
 
   const { showAlert } = useAlert();
   const router = useRouter();
+  const { start, stop } = useApiLoader();
 
   useEffect(() => {
     fetchProfile();
@@ -28,6 +30,7 @@ const UpdateProfile = () => {
 
   const fetchProfile = async () => {
     try {
+      start();
       const profile = await getProfileAction();
       if (profile.success) {
         setFormData({
@@ -42,8 +45,10 @@ const UpdateProfile = () => {
           setPreview(profile.user?.image);
         }
       }
+      stop();
     } catch (error) {
       showAlert("Failed to load profile", "error");
+      stop();
       console.error("Failed to load profile:", error);
     }
   };
@@ -65,6 +70,7 @@ const UpdateProfile = () => {
     e.preventDefault();
 
     try {
+      start();
       const data = new FormData();
       data.append("first_name", formData.first_name);
 
@@ -77,11 +83,13 @@ const UpdateProfile = () => {
       }
 
       const res = await updateProfile(data);
+      stop();
       if (res.success) {
         showAlert("Profile updated successfully", "success");
         router.push("/dashboard");
       }
     } catch (err) {
+      stop();
       showAlert("Failed to update profile", "error");
       return NextResponse.json({
         success: false,
@@ -186,6 +194,7 @@ const UpdateProfile = () => {
 
         <div className="border-t border-gray-200 pt-3 flex flex-col md:flex-row gap-3 md:gap-4 justify-center">
           <button
+            onClick={() => router.push("/dashboard")}
             type="button"
             className="w-full md:w-auto px-6 py-3 border border-gray-300 text-gray-700 rounded-lg font-medium hover:bg-gray-100 transition"
           >

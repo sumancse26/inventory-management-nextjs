@@ -1,6 +1,7 @@
 "use client";
-import { doLogoutAction } from "@/app/actions/authAction";
+import { doLogoutAction, getProfileAction } from "@/app/actions/authAction";
 import { useAlert } from "@/context/AlertContext";
+import { useApiLoader } from "@/lib/useApiLoader";
 import Cookies from "js-cookie";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -8,11 +9,33 @@ import { useEffect, useRef, useState } from "react";
 
 const Header = () => {
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [profile, setProfile] = useState({});
   const dropdownRef = useRef(null);
   const router = useRouter();
   const { showAlert } = useAlert();
+  const { start, stop } = useApiLoader();
 
   // Close dropdown when clicking outside
+
+  useEffect(() => {
+    fetchProfile();
+  }, []);
+
+  const fetchProfile = async () => {
+    try {
+      start();
+      const result = await getProfileAction();
+
+      stop();
+      if (result.success) {
+        setProfile(result.user);
+      }
+    } catch (error) {
+      stop();
+      showAlert("Failed to fetch profile", "error");
+    }
+  };
+
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
@@ -44,7 +67,7 @@ const Header = () => {
             <Link href="#" className="flex items-center">
               {/* logo svg... */}
               <span className="ml-2 text-xl font-bold text-gray-900 dark:text-white">
-                Acme Inc
+                Sales Inventory
               </span>
             </Link>
           </div>
@@ -84,13 +107,13 @@ const Header = () => {
                 <div className="relative">
                   <img
                     className="h-8 w-8 rounded-full"
-                    src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e"
+                    src={profile.image}
                     alt="User profile"
                   />
                   <span className="absolute bottom-0 right-0 h-2 w-2 bg-green-500 rounded-full ring-2 ring-white dark:ring-gray-900" />
                 </div>
                 <span className="hidden md:inline-block text-sm font-medium text-gray-700 dark:text-gray-200">
-                  John Doe
+                  {profile.first_name || ""} {profile.last_name || ""}
                 </span>
                 <svg
                   className="hidden md:block h-4 w-4 text-gray-500"

@@ -1,6 +1,7 @@
 "use client";
 import { loginAction } from "@/app/actions/authAction";
 import { useAlert } from "@/context/AlertContext";
+import { useApiLoader } from "@/lib/useApiLoader";
 import Cookies from "js-cookie";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -13,6 +14,7 @@ const Login = () => {
   });
   const router = useRouter();
   const { showAlert } = useAlert();
+  const { start, stop } = useApiLoader();
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -22,7 +24,9 @@ const Login = () => {
   const handleFormSubmit = async (e) => {
     e.preventDefault();
 
+    start();
     const result = await loginAction(null, formData);
+    stop();
     if (result && result.success) {
       showAlert(result.message, "success");
       setFormData({
@@ -36,6 +40,7 @@ const Login = () => {
       });
       router.push("/dashboard");
     } else {
+      stop();
       showAlert(result.message, "error");
     }
   };

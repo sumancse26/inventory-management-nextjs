@@ -108,9 +108,7 @@ const UpdateProfile = () => {
       <div className="flex justify-center mb-6">
         <div className="relative w-28 h-28">
           <img
-            src={
-              preview || "https://via.placeholder.com/150x150.png?text=Profile"
-            }
+            src={preview || ""}
             alt="Profile"
             className="w-28 h-28 rounded-full object-cover border-2 border-indigo-500"
           />

@@ -6,7 +6,6 @@ import {
   login,
   register,
   submitOtp,
-  updateProfile,
   verifyOtp,
 } from "@/services/inventory";
 export const loginAction = async (prevState, formData) => {
@@ -74,7 +73,7 @@ export const getProfileAction = async () => {
   return result;
 };
 
-export const updateProfileAction = async (data) => {
-  const res = await updateProfile(data);
-  return res;
-};
+// export const updateProfileAction = async (data) => {
+//   const res = await updateProfile(data);
+//   return res;
+// };

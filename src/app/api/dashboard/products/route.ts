@@ -29,13 +29,17 @@ export const GET = async (req: NextRequest): Promise<NextResponse> => {
       },
     });
     return NextResponse.json(
-      { message: "Success", data: products },
+      { message: "Fetched successfully", success: true, data: products },
       { status: 200 }
     );
   } catch (err) {
     console.log(err);
     return NextResponse.json(
-      { error: "Internal server error" },
+      {
+        error: "Internal server error",
+        success: false,
+        message: "Internal server error",
+      },
       { status: 500 }
     );
   }
@@ -105,7 +109,7 @@ export const POST = async (req: NextRequest): Promise<NextResponse> => {
     const unit = formData.get("unit")?.toString() || "";
     const categoryId = Number(formData.get("category_id"));
 
-    if (!name || !price || !unit || isNaN(categoryId)) {
+    if (!name || !price || !qty || isNaN(categoryId)) {
       // Clean up uploaded file on bad input
       await unlink(fullPath);
       return NextResponse.json(
@@ -138,13 +142,17 @@ export const POST = async (req: NextRequest): Promise<NextResponse> => {
     });
 
     return NextResponse.json(
-      { message: "Upload successful", data: result },
+      { message: "Upload successful", success: true, data: result },
       { status: 200 }
     );
   } catch (err) {
     console.error("Image upload error:", err);
     return NextResponse.json(
-      { error: "Internal server error" },
+      {
+        error: "Internal server error",
+        success: false,
+        message: "Internal server error",
+      },
       { status: 500 }
     );
   }
@@ -280,13 +288,17 @@ export const PUT = async (req: NextRequest): Promise<NextResponse> => {
     });
 
     return NextResponse.json(
-      { message: "Update successful", data: updatedProduct },
+      { message: "Update successful", success: true, data: updatedProduct },
       { status: 200 }
     );
   } catch (err) {
     console.error("Image update error:", err);
     return NextResponse.json(
-      { error: "Internal server error" },
+      {
+        error: "Internal server error",
+        success: false,
+        message: "Internal server error",
+      },
       { status: 500 }
     );
   }
@@ -308,11 +320,18 @@ export const DELETE = async (req: NextRequest): Promise<NextResponse> => {
         user_id: Number(userId),
       },
     });
-    return NextResponse.json({ message: "Success" }, { status: 200 });
+    return NextResponse.json(
+      { message: "Deleted successfully", success: true },
+      { status: 200 }
+    );
   } catch (err) {
     console.log(err);
     return NextResponse.json(
-      { error: "Internal server error" },
+      {
+        error: "Internal server error",
+        success: false,
+        message: "Internal server error",
+      },
       { status: 500 }
     );
   }

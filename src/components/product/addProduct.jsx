@@ -18,8 +18,8 @@ const AddProduct = ({
     image: "",
     qty: "",
   });
-  const [productImage, setProductImage] = useState(null);
-  const [preview, setPreview] = useState(null);
+  const [productImage, setProductImage] = useState("");
+  const [preview, setPreview] = useState("");
   const [category, setCategory] = useState("");
 
   const { showAlert } = useAlert();
@@ -39,16 +39,19 @@ const AddProduct = ({
         setPreview(selectedProduct.img_url);
         setProductImage(selectedProduct.img_url);
       }
+
+      console.log(selectedProduct);
     } else {
       setProductInfo({
         name: "",
-        price: 0,
+        price: "",
         unit: "",
         image: "",
-        qty: 0,
+        qty: "",
       });
-      setProductImage(null);
-      setPreview(null);
+      setProductImage("");
+      setPreview("");
+      setCategory("");
     }
   }, [selectedProduct]);
 
@@ -76,20 +79,24 @@ const AddProduct = ({
     data.append("category_id", category);
     data.append("qty", productInfo.qty);
 
-    if (productImage) {
+    if (productImage instanceof File) {
       data.append("image", productImage);
+    } else {
+      data.append("image", "");
     }
+
     if (
-      !productInfo.name ||
-      productInfo.price <= 0 ||
-      !category ||
-      productInfo.qty <= 0
+      productInfo.name == "" ||
+      productInfo.price == "" ||
+      category == "" ||
+      productInfo.qty == ""
     ) {
       showAlert("Fill all the fields", "error");
       return;
     }
 
     const res = await handleSubmit(data);
+
     if (res.success) {
       setProductInfo({
         name: "",
@@ -98,8 +105,8 @@ const AddProduct = ({
         image: "",
         qty: "",
       });
-      setProductImage(null);
-      setPreview(null);
+      setProductImage("");
+      setPreview("");
       setCategory("");
     }
   };
@@ -236,11 +243,7 @@ const AddProduct = ({
                   {productImage?.name ? <span>{productImage.name}</span> : ""}
                 </div>
                 <input
-                  id="product-image"
                   type="file"
-                  name="image"
-                  required
-                  accept="image/*"
                   onChange={handleImageChange}
                   className="hidden"
                 />

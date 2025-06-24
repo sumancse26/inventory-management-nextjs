@@ -169,6 +169,7 @@ export const PUT = async (req: NextRequest): Promise<NextResponse> => {
     }
 
     const formData = await req.formData();
+    console.log("server", formData);
     const image = formData.get("image") as File;
 
     const productId = Number(formData.get("id"));
@@ -257,7 +258,7 @@ export const PUT = async (req: NextRequest): Promise<NextResponse> => {
     const unit = formData.get("unit")?.toString() || "";
     const categoryId = Number(formData.get("category_id"));
 
-    if (!name || !price || !unit || isNaN(categoryId)) {
+    if (!name || !price || !qty || isNaN(categoryId)) {
       return NextResponse.json(
         { error: "Missing or invalid fields" },
         { status: 400 }

@@ -6,7 +6,7 @@ import {
 } from "@/app/actions/productAction";
 import { useAlert } from "@/context/AlertContext";
 import { useApiLoader } from "@/lib/useApiLoader";
-import { addProduct } from "@/services/product";
+import { addProduct, updateProduct } from "@/services/product";
 import { NextResponse } from "next/server";
 import { useEffect, useState } from "react";
 import AddProduct from "./addProduct";
@@ -51,14 +51,15 @@ const ProductList = () => {
     try {
       let res = "";
       start();
-      if (value.id) {
+      if (selectedProduct.id) {
         res = await updateProduct(value);
       } else {
         res = await addProduct(value);
       }
       stop();
       if (res.success) {
-        showAlert("res.message", "success");
+        showAlert(res.message, "success");
+        setShowModal(false);
         fetchProductList();
       }
       return res;
@@ -73,7 +74,7 @@ const ProductList = () => {
     }
   };
 
-  const updateProduct = (val) => {
+  const updateProductHandler = (val) => {
     setSelectedProduct(val);
     setShowModal(true);
   };
@@ -178,7 +179,7 @@ const ProductList = () => {
                         </td>
                         <td className="px-6 py-3 flex justify-end gap-2">
                           <button
-                            onClick={() => updateProduct(product)}
+                            onClick={() => updateProductHandler(product)}
                             className="material-icons opacity-0 group-hover:opacity-100 bg-purple-600 hover:bg-purple-700 text-white rounded-full w-8 h-8 flex items-center justify-center transition"
                           >
                             edit

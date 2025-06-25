@@ -15,6 +15,7 @@ export const GET = async (req: NextRequest): Promise<NextResponse> => {
         { status: 400 }
       );
     }
+
     const products = await prisma.products.findMany({
       where: {
         user_id: Number(userId),
@@ -24,8 +25,16 @@ export const GET = async (req: NextRequest): Promise<NextResponse> => {
         category_id: true,
         name: true,
         price: true,
-        qty: true,
+        stock: true,
+        unit_price: true,
+        vat_pct: true,
+        uom: true,
+        uom_name: true,
         img_url: true,
+        discount: true,
+      },
+      orderBy: {
+        id: "desc",
       },
     });
     return NextResponse.json(
@@ -57,59 +66,72 @@ export const POST = async (req: NextRequest): Promise<NextResponse> => {
 
     const formData = await req.formData();
     const image = formData.get("image") as File;
+    let fileUrl = "";
+    let fullPath = "";
 
-    if (!image) {
-      return NextResponse.json({ error: "Image is required" }, { status: 400 });
+    // if (!image) {
+    //   return NextResponse.json({ error: "Image is required" }, { status: 400 });
+    // }
+
+    if (
+      image &&
+      typeof image == "object" &&
+      "size" in image &&
+      image.size > 0
+    ) {
+      const maxSize = 5 * 1024 * 1024;
+      if (image.size > maxSize) {
+        return NextResponse.json(
+          { error: "Image must be less than 5MB" },
+          { status: 400 }
+        );
+      }
+
+      const allowedTypes = [
+        "image/jpeg",
+        "image/png",
+        "image/gif",
+        "image/webp",
+        "application/pdf",
+      ];
+      if (!allowedTypes.includes(image.type)) {
+        return NextResponse.json(
+          { error: "Invalid image type" },
+          { status: 400 }
+        );
+      }
+
+      const buffer = Buffer.from(await image.arrayBuffer());
+      const timestamp = Date.now();
+      const ext = path.extname(image.name);
+      const baseName = path
+        .basename(image.name, ext)
+        .replace(/\s+/g, "_")
+        .replace(/[^a-zA-Z0-9_-]/g, "")
+        .toLowerCase();
+      const fileName = `${baseName}_${timestamp}${ext}`;
+
+      const uploadDir = path.join(process.cwd(), "public/uploads");
+      if (!existsSync(uploadDir)) {
+        await mkdir(uploadDir, { recursive: true });
+      }
+
+      fullPath = path.join(uploadDir, fileName);
+      await writeFile(fullPath, buffer);
+      fileUrl = `/uploads/${fileName}`;
     }
 
-    const maxSize = 5 * 1024 * 1024;
-    if (image.size > maxSize) {
-      return NextResponse.json(
-        { error: "Image must be less than 5MB" },
-        { status: 400 }
-      );
-    }
-
-    const allowedTypes = [
-      "image/jpeg",
-      "image/png",
-      "image/gif",
-      "image/webp",
-      "application/pdf",
-    ];
-    if (!allowedTypes.includes(image.type)) {
-      return NextResponse.json(
-        { error: "Invalid image type" },
-        { status: 400 }
-      );
-    }
-
-    const buffer = Buffer.from(await image.arrayBuffer());
-    const timestamp = Date.now();
-    const ext = path.extname(image.name);
-    const baseName = path
-      .basename(image.name, ext)
-      .replace(/\s+/g, "_")
-      .replace(/[^a-zA-Z0-9_-]/g, "")
-      .toLowerCase();
-    const fileName = `${baseName}_${timestamp}${ext}`;
-
-    const uploadDir = path.join(process.cwd(), "public/uploads");
-    if (!existsSync(uploadDir)) {
-      await mkdir(uploadDir, { recursive: true });
-    }
-
-    const fullPath = path.join(uploadDir, fileName);
-    await writeFile(fullPath, buffer);
-    const fileUrl = `/uploads/${fileName}`;
-
+    const categoryId = Number(formData.get("category_id"));
     const name = formData.get("name")?.toString() || "";
     const price = formData.get("price")?.toString() || "";
-    const qty = formData.get("qty") || 0;
-    const unit = formData.get("unit")?.toString() || "";
-    const categoryId = Number(formData.get("category_id"));
+    const stock = formData.get("stock") || 0;
+    const unit_price = formData.get("unit_price")?.toString() || "";
+    const vat_pct = formData.get("vat_pct") || 0;
+    const uom = formData.get("uom") || 0;
+    const uom_name = formData.get("uom_name")?.toString() || "PC";
+    const discount = formData.get("discount") || 0;
 
-    if (!name || !price || !qty || isNaN(categoryId)) {
+    if (!name || !price || !stock || !uom || isNaN(categoryId)) {
       // Clean up uploaded file on bad input
       await unlink(fullPath);
       return NextResponse.json(
@@ -121,21 +143,21 @@ export const POST = async (req: NextRequest): Promise<NextResponse> => {
     const result = await prisma.$transaction(async (tx) => {
       const product = await tx.products.create({
         data: {
+          user_id: Number(userId),
+          category_id: categoryId,
           name,
           price,
-          unit,
-          qty: Number(qty),
-          category_id: categoryId,
-          user_id: Number(userId),
+          stock: Number(stock),
+          unit_price: unit_price,
+          vat_pct: Number(vat_pct),
+          uom: Number(uom),
+          uom_name,
+          discount: Number(discount),
           img_url: fileUrl,
         },
         select: {
           id: true,
           name: true,
-          price: true,
-          unit: true,
-          category_id: true,
-          img_url: true,
         },
       });
       return product;
@@ -169,7 +191,7 @@ export const PUT = async (req: NextRequest): Promise<NextResponse> => {
     }
 
     const formData = await req.formData();
-    console.log("server", formData);
+
     const image = formData.get("image") as File;
 
     const productId = Number(formData.get("id"));
@@ -193,7 +215,12 @@ export const PUT = async (req: NextRequest): Promise<NextResponse> => {
 
     let fileUrl = existingProduct.img_url;
 
-    if (image) {
+    if (
+      image &&
+      typeof image == "object" &&
+      "size" in image &&
+      image.size > 0
+    ) {
       const maxSize = 5 * 1024 * 1024;
       if (image.size > maxSize) {
         return NextResponse.json(
@@ -209,6 +236,7 @@ export const PUT = async (req: NextRequest): Promise<NextResponse> => {
         "image/webp",
         "application/pdf",
       ];
+      console.log("kkkk", image.type);
       if (!allowedTypes.includes(image.type)) {
         return NextResponse.json(
           { error: "Invalid image type" },
@@ -252,13 +280,17 @@ export const PUT = async (req: NextRequest): Promise<NextResponse> => {
       fileUrl = `/uploads/${fileName}`;
     }
 
+    const categoryId = Number(formData.get("category_id"));
     const name = formData.get("name")?.toString() || "";
     const price = formData.get("price")?.toString() || "";
-    const qty = Number(formData.get("qty")) || 0;
-    const unit = formData.get("unit")?.toString() || "";
-    const categoryId = Number(formData.get("category_id"));
+    const stock = formData.get("stock") || 0;
+    const unit_price = formData.get("unit_price")?.toString() || "";
+    const vat_pct = formData.get("vat_pct") || 0;
+    const uom = formData.get("uom") || 0;
+    const uom_name = formData.get("uom_name")?.toString() || "PC";
+    const discount = formData.get("discount") || 0;
 
-    if (!name || !price || !qty || isNaN(categoryId)) {
+    if (!name || !price || !stock || !uom || !uom_name || isNaN(categoryId)) {
       return NextResponse.json(
         { error: "Missing or invalid fields" },
         { status: 400 }
@@ -273,18 +305,18 @@ export const PUT = async (req: NextRequest): Promise<NextResponse> => {
       data: {
         name,
         price,
-        unit,
-        qty,
+        stock: Number(stock),
+        unit_price: unit_price,
+        vat_pct: Number(vat_pct),
+        uom: Number(uom),
+        uom_name,
+        discount: Number(discount),
         category_id: categoryId,
         img_url: fileUrl,
       },
       select: {
         id: true,
         name: true,
-        price: true,
-        unit: true,
-        category_id: true,
-        img_url: true,
       },
     });
 

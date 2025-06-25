@@ -43,10 +43,13 @@ model products {
     category_id         Int        
     name                String              @db.VarChar(100)
     price               String              @db.VarChar(50)
-    qty                 Int                 @default(0)
-    available_stock     Int                 @default(0)
-    unit                String              @db.VarChar(50)
-    img_url             String?              @default("") @db.VarChar(100)
+    stock               Int                 @default(0)
+    unit_price          String              @default("0") @db.VarChar(50)
+    vat_pct             Int                 @default(0)
+    uom                 Int                 @default(1)
+    uom_name            String              @default("PC")
+    discount            Int                 @default(0)
+    img_url             String?             @default("") @db.VarChar(100)
     created_at          DateTime            @default(now())
     updated_at          DateTime            @updatedAt
 

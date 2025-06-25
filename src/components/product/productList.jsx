@@ -49,6 +49,7 @@ const ProductList = () => {
 
   const handleSubmit = async (value) => {
     try {
+      console.log("value", value);
       let res = "";
       start();
       if (selectedProduct.id) {
@@ -132,24 +133,32 @@ const ProductList = () => {
                 <table className="min-w-full divide-y divide-gray-200 dark:divide-neutral-700 text-sm">
                   <thead className="bg-gray-50 dark:bg-neutral-700">
                     <tr>
-                      {["SL", "Image", "Name", "Price", "Qty", "Action"].map(
-                        (heading, idx) => (
-                          <th
-                            key={idx}
-                            className={`px-6 py-3 ${
-                              idx === 0
-                                ? "text-center"
-                                : idx === 5
-                                ? "text-end"
-                                : "text-left"
-                            }`}
-                          >
-                            <span className="font-semibold text-xs uppercase tracking-wider text-gray-800 dark:text-neutral-200">
-                              {heading}
-                            </span>
-                          </th>
-                        )
-                      )}
+                      <th>
+                        <span className="font-semibold text-xs uppercase tracking-wider text-gray-800 dark:text-neutral-200">
+                          SL
+                        </span>
+                      </th>
+                      <th className="px-1 py-2 font-semibold text-xs uppercase tracking-wider text-gray-800 dark:text-neutral-200 text-start">
+                        Image
+                      </th>
+                      <th className="px-1 py-2 font-semibold text-xs uppercase tracking-wider text-gray-800 dark:text-neutral-200  text-start">
+                        Name
+                      </th>
+                      <th className="px-1 py-2 font-semibold text-xs uppercase tracking-wider text-gray-800 dark:text-neutral-200  text-end">
+                        Price (TK)
+                      </th>
+                      <th className="px-1 py-2 font-semibold text-xs uppercase tracking-wider text-gray-800 dark:text-neutral-200  text-end">
+                        Stock
+                      </th>
+                      <th className="px-1 py-2 font-semibold text-xs uppercase tracking-wider text-gray-800 dark:text-neutral-200  text-center">
+                        VAT (%)
+                      </th>
+                      <th className="px-1 py-2 font-semibold text-xs uppercase tracking-wider text-gray-800 dark:text-neutral-200  text-end">
+                        Discount (TK)
+                      </th>
+                      <th className="px-1 py-2 font-semibold text-xs uppercase tracking-wider text-gray-800 dark:text-neutral-200">
+                        Action
+                      </th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-100 dark:divide-neutral-700">
@@ -161,23 +170,33 @@ const ProductList = () => {
                         <td className="text-center px-6 py-3 font-medium text-gray-800 dark:text-white">
                           {indx + 1}
                         </td>
-                        <td className="px-6 py-3">
-                          <img
-                            src={product?.img_url}
-                            alt="Product"
-                            className="w-10 h-10 rounded-md bg-gray-100"
-                          />
+                        <td className="px-1 py-2 text-start">
+                          {product?.img_url != "" ? (
+                            <img
+                              src={product?.img_url || null}
+                              alt="Product"
+                              className="w-10 h-10 rounded-md bg-gray-100"
+                            />
+                          ) : (
+                            ""
+                          )}
                         </td>
-                        <td className="px-6 py-3 text-gray-600 dark:text-neutral-300">
+                        <td className="px-1 py-2 text-gray-600 dark:text-neutral-300  text-start">
                           {product?.name || ""}
                         </td>
-                        <td className="px-6 py-3 text-gray-600 dark:text-neutral-300">
+                        <td className="px-1 py-2 text-gray-600 dark:text-neutral-300 text-end">
                           {product.price || 0}
                         </td>
-                        <td className="px-6 py-3 text-gray-600 dark:text-neutral-300">
-                          {product.qty}
+                        <td className="px-1 py-2 text-gray-600 dark:text-neutral-300 text-end">
+                          {product.stock || 0} {product.uom_name || ""}
                         </td>
-                        <td className="px-6 py-3 flex justify-end gap-2">
+                        <td className="px-1 py-2 text-gray-600 dark:text-neutral-300 text-center">
+                          {product.vat_pct || 0}
+                        </td>
+                        <td className="px-1 py-2 text-gray-600 dark:text-neutral-300 text-end">
+                          {product.discount || 0}
+                        </td>
+                        <td className="px-1 py-2 flex justify-end gap-2">
                           <button
                             onClick={() => updateProductHandler(product)}
                             className="material-icons opacity-0 group-hover:opacity-100 bg-purple-600 hover:bg-purple-700 text-white rounded-full w-8 h-8 flex items-center justify-center transition"

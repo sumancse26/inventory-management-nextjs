@@ -1,6 +1,7 @@
 "use client";
 
 import { customerListAction } from "@/app/actions/customerAction";
+import { confirmSaleAction } from "@/app/actions/invoiceAction";
 import { productListAction } from "@/app/actions/productAction";
 import SearchableDropdown from "@/components/searchableDropdown";
 import { useAlert } from "@/context/AlertContext";
@@ -12,6 +13,7 @@ const Sale = () => {
   const [filteredProduct, setFilteredProduct] = useState([]);
   const [addedProduct, setAddedProduct] = useState([]);
   const [selectedCustomer, setSelectedCustomer] = useState({});
+  const [discount, setDiscount] = useState(0);
 
   const { showAlert } = useAlert();
 
@@ -64,6 +66,7 @@ const Sale = () => {
 
   const addProductHandler = (val) => {
     setAddedProduct((prev) => [...prev, val]);
+    setFilteredProduct((prev) => prev.filter((item) => item.id != val.id));
   };
 
   const subTotal = () => {
@@ -78,6 +81,9 @@ const Sale = () => {
   };
 
   const discountTotal = () => {
+    if (discount > 0) {
+      return discount;
+    }
     return addedProduct.reduce((total, item) => {
       return total + Number(item.discount || 0) || 0;
     }, 0);
@@ -95,34 +101,58 @@ const Sale = () => {
     const { value } = e.target;
     const updatedProduct = addedProduct.map((prod) => {
       if (prod.id === item.id) {
-        return { ...prod, item_total: Number(value) * Number(prod.price) };
+        return {
+          ...prod,
+          qty: Number(value),
+          item_total: Number(value) * Number(prod.price),
+        };
       }
       return prod;
     });
     setAddedProduct(updatedProduct);
   };
+
+  const discountHandler = (e, item) => {
+    const { value } = e.target;
+    setDiscount(value);
+  };
+
   const confirmSaleHandler = async () => {
     try {
+      if (!selectedCustomer?.id)
+        return showAlert("Please select a customer", "error");
+
       const data = {
         customer_id: selectedCustomer.id,
+        is_gross_total: discount > 0 ? true : false,
         total: subTotal(),
-        discount: discountTotal() || 0,
+        discount: (discount > 0 ? discount : discountTotal()) || 0,
         vat_pct: totalVat() || 0,
         payable: totalPayable() || 0,
-        products: addedProduct?.map((prod) => {
+        products: await addedProduct?.map((prod) => {
           return {
             product_id: prod.id,
             qty: prod.qty,
             sale_price: prod.price || 0,
+            discount: prod.discount,
+            item_total: prod.item_total,
+            vat_pct: prod.vat_pct,
           };
         }),
       };
-
       console.log("data", data);
-      showAlert("Sale Confirmed", "success");
+      const res = await confirmSaleAction(data);
+
+      showAlert(res.message, "success");
     } catch (err) {
       showAlert(err.message, "error");
     }
+  };
+
+  const removeProduct = (data) => {
+    const product = addedProduct.filter((item) => item.id != data.id);
+    setAddedProduct(product);
+    setFilteredProduct((prev) => [data, ...prev]);
   };
 
   return (
@@ -136,19 +166,19 @@ const Sale = () => {
                 Billed To
               </h2>
               <p className="text-sm text-gray-600">
-                Name:{" "}
+                Name:
                 <span className="text-indigo-700">
                   {selectedCustomer.name || ""}
                 </span>
               </p>
               <p className="text-sm text-gray-600">
-                Email:{" "}
+                Email:
                 <span className="text-indigo-700">
                   {selectedCustomer.email || ""}
                 </span>
               </p>
               <p className="text-sm text-gray-600">
-                Phone:{" "}
+                Phone:
                 <span className="text-indigo-700">
                   {selectedCustomer.mobile || ""}
                 </span>
@@ -166,12 +196,12 @@ const Sale = () => {
                 <tr className="text-gray-600 border-b border-gray-300">
                   <th className="w-1/12 px-2 py-1">SL</th>
                   <th className="w-3/12 px-2 py-1">Name</th>
-                  <th className="w-2/12 px-2 py-1 text-end">Stock</th>
+                  <th className="w-1/12 px-2 py-1 text-end">Stock</th>
                   <th className="w-2/12 px-2 py-1 text-end">Price</th>
                   <th className="w-1/12 px-2 py-1">Qty</th>
                   <th className="w-1/12 px-2 py-1 text-center">VAT</th>
                   <th className="w-1/12 px-2 py-1 text-center">Discount</th>
-                  <th className="w-2/12 px-2 py-1 text-right">Total</th>
+                  <th className="w-3/12 px-2 py-1 text-right">Total</th>
                   <th className="w-1/12"></th>
                 </tr>
               </thead>
@@ -209,7 +239,10 @@ const Sale = () => {
                       {addedProd.item_total || 0}
                     </td>
                     <td className="text-center">
-                      <button className="bg-red-500 text-white w-6 h-6 rounded-full opacity-0 group-hover:opacity-100 transition">
+                      <button
+                        onClick={() => removeProduct(addedProd)}
+                        className="bg-red-500 text-white w-6 h-6 rounded-full opacity-0 group-hover:opacity-100 transition"
+                      >
                         ✕
                       </button>
                     </td>
@@ -225,7 +258,7 @@ const Sale = () => {
               <span className="text-indigo-700">{subTotal()} TK.</span>
             </p>
             <p>
-              Payable:{" "}
+              Payable:
               <span className="text-indigo-700">{totalPayable()} TK.</span>
             </p>
             <p>
@@ -237,6 +270,7 @@ const Sale = () => {
                 Discount:
               </label>
               <input
+                onChange={(e) => discountHandler(e)}
                 type="number"
                 id="discount"
                 className="w-full px-4 py-2 outline-none border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 dark:bg-neutral-700 dark:border-neutral-600 dark:text-white"

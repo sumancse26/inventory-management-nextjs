@@ -16,6 +16,7 @@ model users {
     mobile              String      @db.VarChar(20)
     password            String      
     otp                 String      @db.VarChar(10)
+    role                Int         @default(2)
     created_at          DateTime    @default(now())
     updated_at          DateTime    @updatedAt
 
@@ -91,6 +92,7 @@ model invoices {
 model invoice_products {
   id                    Int       @id @default(autoincrement())
   invoice_id            Int
+  product_name          String    @default("") @db.VarChar(100)
   product_id            Int
   user_id               Int
   qty                   String    @db.VarChar(50)

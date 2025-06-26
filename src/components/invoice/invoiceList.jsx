@@ -1,4 +1,53 @@
+"use client";
+
+import {
+  invoiceInfotAction,
+  invoiceListAction,
+} from "@/app/actions/invoiceAction";
+import Link from "next/link";
+import { useEffect, useState } from "react";
+import InvoiceDetail from "./invoiceDetails";
+
 const InvoiceList = () => {
+  const [invoiceList, setInvoiceList] = useState([]);
+  const [showInvDtl, setShowInvDtl] = useState(false);
+  const [invInfo, setInvInfo] = useState({});
+
+  useEffect(() => {
+    getInvListHandler();
+
+    return () => {};
+  }, []);
+
+  const getInvListHandler = async () => {
+    try {
+      const res = await invoiceListAction();
+
+      setInvoiceList(res.data || []);
+    } catch (err) {
+      console.log(err.message);
+    }
+  };
+
+  const getInvById = async (data) => {
+    try {
+      const res = await invoiceInfotAction(data.id);
+      console.log(res);
+      setInvInfo(res.invoiceInfo || {});
+    } catch (err) {
+      console.log(err.message);
+    }
+  };
+
+  const viewInvHandler = (data) => {
+    getInvById(data);
+    setShowInvDtl(true);
+  };
+
+  const closeModalHandler = () => {
+    setShowInvDtl(false);
+  };
+
   return (
     <div className="p-6 bg-white rounded-2xl shadow-lg">
       {/* Header */}
@@ -7,10 +56,13 @@ const InvoiceList = () => {
           <span className="material-icons text-3xl">receipt_long</span>
           <h2 className="text-2xl font-bold text-gray-800">Invoice List</h2>
         </div>
-        {/* <button className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium bg-gradient-to-r from-blue-500 to-purple-600 text-white font-semibold rounded hover:from-blue-600 hover:to-purple-700 focus:outline-none">
-          <span className="material-icons text-base">add</span>
-          Add Invoice
-        </button> */}
+        <Link
+          href="/dashboard/sale"
+          className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium bg-gradient-to-r from-blue-500 to-purple-600 text-white font-semibold rounded hover:from-blue-600 hover:to-purple-700 focus:outline-none"
+        >
+          <span className="material-icons">switch_access_shortcut</span>
+          Back to sale
+        </Link>
       </div>
 
       {/* Table */}
@@ -18,46 +70,52 @@ const InvoiceList = () => {
         <table className="min-w-full text-sm text-left">
           <thead className="bg-gray-100 text-gray-700 uppercase text-xs">
             <tr>
-              {[
-                "No",
-                "Name",
-                "Phone",
-                "Total",
-                "Vat",
-                "Discount",
-                "Payable",
-                "Action",
-              ].map((head, idx) => (
-                <th key={idx} className="px-5 py-3 font-semibold">
-                  {head}
-                </th>
-              ))}
+              <th className="px-5 py-3 font-semibold">SL</th>
+              <th className="px-5 py-3 font-semibold">Inv By</th>
+              <th className="px-5 py-3 font-semibold text-end">Discount</th>
+              <th className="px-5 py-3 font-semibold text-end">Vat</th>
+              <th className="px-5 py-3 font-semibold text-end">Total</th>
+              <th className="px-5 py-3 font-semibold">Status</th>
+              <th className="px-5 py-3 font-semibold text-end">Action</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-200">
-            <tr className="hover:bg-gray-50 dark:hover:bg-neutral-700 group transition">
-              <td className="px-5 py-3 text-gray-700">1</td>
-              <td className="px-5 py-3 text-gray-700">vvvvvv</td>
-              <td className="px-5 py-3 text-gray-700">111111</td>
-              <td className="px-5 py-3 text-gray-700">1111</td>
-              <td className="px-5 py-3 text-gray-700">1</td>
-              <td className="px-5 py-3 text-gray-700">11</td>
-              <td className="px-5 py-3 text-gray-700">222</td>
-              <td className="px-5 py-3 flex items-center gap-3">
-                <button
-                  className="w-8 h-8 bg-indigo-500 hover:bg-indigo-600 text-white rounded-full flex items-center justify-center shadow-md transition"
-                  title="View"
-                >
-                  <span className="material-icons text-sm">visibility</span>
-                </button>
-                <button
-                  className="w-8 h-8 bg-red-500 hover:bg-red-600 text-white rounded-full flex items-center justify-center shadow-md transition"
-                  title="Delete"
-                >
-                  <span className="material-icons text-sm">delete</span>
-                </button>
-              </td>
-            </tr>
+            {invoiceList?.map((inv, indx) => (
+              <tr
+                key={indx}
+                className="hover:bg-gray-50 dark:hover:bg-neutral-700 group transition"
+              >
+                <td className="px-5 py-3 text-gray-700">{indx + 1}</td>
+                <td className="px-5 py-3 text-gray-700">
+                  {inv?.user?.first_name || ""} {inv?.user?.last_name || ""}
+                </td>
+                <td className="px-5 py-3 text-gray-700 text-end">
+                  {inv?.discount || 0}
+                </td>
+                <td className="px-5 py-3 text-gray-700 text-end">
+                  {inv?.vat_amount || 0}
+                </td>
+                <td className="px-5 py-3 text-gray-700 text-end">
+                  {inv?.payable || 0}
+                </td>
+                <td className="px-5 py-3 text-gray-700">{inv.status || ""}</td>
+                <td className="px-5 py-3 flex items-end justify-end gap-3 text-end">
+                  <button
+                    onClick={() => viewInvHandler(inv)}
+                    className="material-icons opacity-0 group-hover:opacity-100 bg-purple-600 hover:bg-purple-700 text-white rounded-full w-8 h-8 flex items-center justify-center transition"
+                    title="View"
+                  >
+                    <span className="material-icons text-sm">visibility</span>
+                  </button>
+                  <button
+                    className="material-icons opacity-0 group-hover:opacity-100 bg-red-500 hover:bg-red-600 text-white rounded-full w-8 h-8 flex items-center justify-center transition"
+                    title="Delete"
+                  >
+                    <span className="material-icons text-sm">delete</span>
+                  </button>
+                </td>
+              </tr>
+            ))}
           </tbody>
         </table>
       </div>
@@ -76,6 +134,13 @@ const InvoiceList = () => {
           </button>
         </div>
       </div>
+
+      {showInvDtl && (
+        <InvoiceDetail
+          closeModalHandler={closeModalHandler}
+          invInfo={invInfo}
+        />
+      )}
     </div>
   );
 };

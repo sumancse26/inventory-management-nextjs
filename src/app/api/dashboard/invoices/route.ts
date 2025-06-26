@@ -5,7 +5,14 @@ type productType = {
   product_id: number;
   qty: number;
   sale_price: number;
+  discount: number;
+  item_total: number;
+  vat_pct: number;
 };
+
+type userType = {
+  role: number;
+} | null;
 
 export const GET = async (req: NextRequest): Promise<NextResponse> => {
   try {
@@ -13,31 +20,79 @@ export const GET = async (req: NextRequest): Promise<NextResponse> => {
     if (!userId) {
       return NextResponse.json(
         { message: "Unauthorized user" },
-        { status: 400 }
+        { status: 401 }
       );
     }
-    const invoices = await prisma.invoices.findMany({
-      where: {
-        user_id: Number(userId),
-      },
+
+    const user: userType | null = await prisma.users.findFirst({
+      where: { id: Number(userId) },
       select: {
+        role: true,
         id: true,
-        customer_id: true,
-        total: true,
-        discount: true,
-        vat_pct: true,
-        vat_amount: true,
-        payable: true,
-      },
-      orderBy: {
-        created_at: "desc",
       },
     });
 
-    return NextResponse.json(
-      { message: "Success", data: invoices },
-      { status: 200 }
-    );
+    if (!user) {
+      return NextResponse.json(
+        { message: "User not found", success: false },
+        { status: 404 }
+      );
+    }
+
+    if (user && user?.role == 1) {
+      const invoices = await prisma.invoices.findMany({
+        select: {
+          id: true,
+          customer_id: true,
+          discount: true,
+          vat_amount: true,
+          payable: true,
+          user: {
+            select: {
+              id: true,
+              first_name: true,
+              last_name: true,
+            },
+          },
+        },
+        orderBy: {
+          created_at: "desc",
+        },
+      });
+
+      return NextResponse.json(
+        { message: "Success", success: true, data: invoices },
+        { status: 200 }
+      );
+    } else {
+      const invoices = await prisma.invoices.findMany({
+        where: {
+          user_id: Number(userId),
+        },
+        select: {
+          id: true,
+          customer_id: true,
+          discount: true,
+          vat_amount: true,
+          payable: true,
+          user: {
+            select: {
+              id: true,
+              first_name: true,
+              last_name: true,
+            },
+          },
+        },
+        orderBy: {
+          created_at: "desc",
+        },
+      });
+
+      return NextResponse.json(
+        { message: "Success", success: true, data: invoices },
+        { status: 200 }
+      );
+    }
   } catch (err) {
     console.log(err);
     return NextResponse.json(
@@ -57,82 +112,53 @@ export const POST = async (req: NextRequest): Promise<NextResponse> => {
         { status: 400 }
       );
     }
+
     const body = await req.json();
-    const vatAmount = (Number(body.total) * Number(body.vat_pct)) / 100;
-    const totalPayable = (
-      Number(body.total) +
-      vatAmount -
-      Number(body.discount)
-    ).toString();
 
-    await prisma.$transaction(async (tx) => {
-      const invoice = await tx.invoices.create({
-        data: {
-          user_id: Number(userId),
-          customer_id: Number(body.customer_id),
-          total: body.total.toString(),
-          discount: body.discount.toString(),
-          vat_pct: Number(body.vat_pct),
-          vat_amount: vatAmount,
-          payable: totalPayable.toString(),
-        },
-      });
-
-      const products = body.products.map((item: productType) => {
-        return {
-          invoice_id: invoice.id,
-          product_id: item.product_id,
-          user_id: Number(userId),
-          qty: item.qty.toString(),
-          sale_price: item.sale_price.toString(),
-        };
-      });
-
-      const invoiceProducts = await tx.invoice_products.createMany({
-        data: products,
-      });
-
-      return { invoice, invoiceProducts };
-    });
-
-    return NextResponse.json({ message: "Success" }, { status: 200 });
-  } catch (err) {
-    console.log(err);
-    return NextResponse.json(
-      { error: "Internal server error" },
-      { status: 500 }
-    );
-  }
-};
-
-//update will be done in future
-export const PUT = async (req: NextRequest): Promise<NextResponse> => {
-  try {
-    const userId = req.headers.get("user_id");
-    if (!userId) {
-      return NextResponse.json(
-        { message: "Unauthorized user" },
-        { status: 400 }
+    const subTotal = () => {
+      return body.products.reduce(
+        (total: number, item: productType) =>
+          total + Number(item.qty || 0) * Number(item.sale_price || 0),
+        0
       );
-    }
-    const body = await req.json();
-    const vatAmount = (Number(body.total) * Number(body.vat_pct)) / 100;
+    };
+    const total = subTotal();
+
+    const discountTotal = () => {
+      if (body.is_gross_total) {
+        return body.discount;
+      } else {
+        return body.products.reduce((total: number, item: productType) => {
+          return total + Number(item.discount || 0) || 0;
+        }, 0);
+      }
+    };
+    const totalDiscount = discountTotal();
+
+    const totalVat = () => {
+      return body.products.reduce((total: number, item: productType) => {
+        return (
+          total + ((Number(item.item_total) * Number(item.vat_pct)) / 100 || 0)
+        );
+      }, 0);
+    };
+    const totalVatAmount = totalVat();
+
     const totalPayable = (
-      Number(body.total) +
-      vatAmount -
-      Number(body.discount)
-    ).toString();
+      Number(total) +
+      Number(totalVatAmount) -
+      Number(totalDiscount)
+    )?.toString();
 
     await prisma.$transaction(async (tx) => {
       const invoice = await tx.invoices.create({
         data: {
           user_id: Number(userId),
           customer_id: Number(body.customer_id),
-          total: body.total.toString(),
-          discount: body.discount.toString(),
-          vat_pct: Number(body.vat_pct),
-          vat_amount: vatAmount,
-          payable: totalPayable.toString(),
+          total: total?.toString(),
+          discount: totalDiscount?.toString(),
+          vat_amount: totalVatAmount,
+          payable: totalPayable,
         },
       });
 
@@ -141,8 +167,8 @@ export const PUT = async (req: NextRequest): Promise<NextResponse> => {
           invoice_id: invoice.id,
           product_id: item.product_id,
           user_id: Number(userId),
-          qty: item.qty.toString(),
-          sale_price: item.sale_price.toString(),
+          qty: item.qty?.toString(),
+          sale_price: item.sale_price?.toString(),
         };
       });
 
@@ -153,11 +179,18 @@ export const PUT = async (req: NextRequest): Promise<NextResponse> => {
       return { invoice, invoiceProducts };
     });
 
-    return NextResponse.json({ message: "Success" }, { status: 200 });
+    return NextResponse.json(
+      { message: "Invoice saved successfully", success: true },
+      { status: 200 }
+    );
   } catch (err) {
     console.log(err);
     return NextResponse.json(
-      { error: "Internal server error" },
+      {
+        error: "Internal server error",
+        success: false,
+        message: "Internal server error",
+      },
       { status: 500 }
     );
   }
@@ -196,11 +229,18 @@ export const DELETE = async (req: NextRequest): Promise<NextResponse> => {
       };
     });
 
-    return NextResponse.json({ message: "Success" }, { status: 200 });
+    return NextResponse.json(
+      { message: "Invoice deleted successfully", success: true },
+      { status: 200 }
+    );
   } catch (err) {
     console.log(err);
     return NextResponse.json(
-      { error: "Internal server error" },
+      {
+        error: "Internal server error",
+        success: false,
+        message: "Internal server error",
+      },
       { status: 500 }
     );
   }

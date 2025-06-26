@@ -25,3 +25,30 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+@media print {
+  body * {
+    visibility: hidden !important;
+  }
+
+  #printable,
+  #printable * {
+    visibility: visible !important;
+  }
+
+  #printable {
+    position: absolute !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    background: white !important;
+    z-index: 9999 !important;
+  }
+
+  #details-modal {
+    all: unset !important;
+    display: block !important;
+  }
+}

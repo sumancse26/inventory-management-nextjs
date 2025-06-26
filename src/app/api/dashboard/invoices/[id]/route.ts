@@ -18,45 +18,33 @@ export const GET = async (
       );
     }
 
-    const customerId = Number(req.nextUrl.searchParams.get("customer_id")) || 0;
-
-    const customerDetail = await prisma.customers.findFirst({
-      where: {
-        user_id: Number(userId),
-        id: Number(customerId), // or req.body.cus_id depending on your route method
-      },
-    });
-
-    const invoiceTotal = await prisma.invoices.findFirst({
+    const invoiceInfo = await prisma.invoices.findFirst({
       where: {
         user_id: Number(userId),
         id: Number(id),
       },
-    });
-
-    const invoiceProduct = await prisma.invoice_products.findMany({
-      where: {
-        user_id: Number(userId),
-        invoice_id: Number(id),
-      },
       include: {
-        product: true, // Assumes relation `product` is defined in your schema
+        customer: true,
+        invoice_products: true,
       },
     });
 
     return NextResponse.json(
       {
         message: "Success",
-        customers: customerDetail,
-        invoices: invoiceTotal,
-        invoiceProducts: invoiceProduct,
+        success: true,
+        invoiceInfo,
       },
       { status: 200 }
     );
   } catch (err) {
     console.log(err);
     return NextResponse.json(
-      { error: "Internal server error" },
+      {
+        error: "Internal server error",
+        success: false,
+        message: "Internal server error",
+      },
       { status: 500 }
     );
   }

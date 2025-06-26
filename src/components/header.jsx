@@ -3,11 +3,12 @@ import { doLogoutAction, getProfileAction } from "@/app/actions/authAction";
 import { useAlert } from "@/context/AlertContext";
 import { useApiLoader } from "@/lib/useApiLoader";
 import Cookies from "js-cookie";
+import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 
-const Header = () => {
+const Header = ({ logoHandler }) => {
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [profile, setProfile] = useState({});
   const dropdownRef = useRef(null);
@@ -58,17 +59,23 @@ const Header = () => {
     }
   };
 
+  const logoBtnHandler = () => {
+    logoHandler();
+  };
   return (
     <header className="sticky top-0 z-50 bg-white shadow-sm dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800">
       <div className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
-          <div className="flex-shrink-0 flex items-center">
-            <Link href="#" className="flex items-center">
-              {/* logo svg... */}
-              <span className="ml-2 text-xl font-bold text-gray-900 dark:text-white">
-                Sales Inventory
-              </span>
+          <div className="flex-shrink-0 flex items-center w-[100px]">
+            <Link href="/dashboard" className="flex items-center">
+              <Image
+                src="/uploads/logo.png"
+                alt="SalesInventory Logo"
+                width={85}
+                height={36}
+                onClick={() => logoBtnHandler(true)}
+              />
             </Link>
           </div>
 

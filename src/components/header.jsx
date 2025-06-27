@@ -74,6 +74,8 @@ const Header = ({ logoHandler }) => {
                 alt="SalesInventory Logo"
                 width={85}
                 height={36}
+                priority
+                style={{ width: "auto", height: "auto" }}
                 onClick={() => logoBtnHandler(true)}
               />
             </Link>

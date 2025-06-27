@@ -4,6 +4,7 @@ import {
   invoiceInfotAction,
   invoiceListAction,
 } from "@/app/actions/invoiceAction";
+import SkeletonList from "@/components/skeleton";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import InvoiceDetail from "./invoiceDetails";
@@ -66,59 +67,67 @@ const InvoiceList = () => {
       </div>
 
       {/* Table */}
-      <div className="overflow-x-auto rounded-lg border border-gray-200">
-        <table className="min-w-full text-sm text-left">
-          <thead className="bg-gray-100 text-gray-700 uppercase text-xs">
-            <tr>
-              <th className="px-5 py-3 font-semibold">SL</th>
-              <th className="px-5 py-3 font-semibold">Inv By</th>
-              <th className="px-5 py-3 font-semibold text-end">Discount</th>
-              <th className="px-5 py-3 font-semibold text-end">Vat</th>
-              <th className="px-5 py-3 font-semibold text-end">Total</th>
-              <th className="px-5 py-3 font-semibold">Status</th>
-              <th className="px-5 py-3 font-semibold text-end">Action</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-gray-200">
-            {invoiceList?.map((inv, indx) => (
-              <tr
-                key={indx}
-                className="hover:bg-gray-50 dark:hover:bg-neutral-700 group transition"
-              >
-                <td className="px-5 py-3 text-gray-700">{indx + 1}</td>
-                <td className="px-5 py-3 text-gray-700">
-                  {inv?.user?.first_name || ""} {inv?.user?.last_name || ""}
-                </td>
-                <td className="px-5 py-3 text-gray-700 text-end">
-                  {inv?.discount || 0}
-                </td>
-                <td className="px-5 py-3 text-gray-700 text-end">
-                  {inv?.vat_amount || 0}
-                </td>
-                <td className="px-5 py-3 text-gray-700 text-end">
-                  {inv?.payable || 0}
-                </td>
-                <td className="px-5 py-3 text-gray-700">{inv.status || ""}</td>
-                <td className="px-5 py-3 flex items-end justify-end gap-3 text-end">
-                  <button
-                    onClick={() => viewInvHandler(inv)}
-                    className="material-icons opacity-0 group-hover:opacity-100 bg-purple-600 hover:bg-purple-700 text-white rounded-full w-8 h-8 flex items-center justify-center transition"
-                    title="View"
-                  >
-                    <span className="material-icons text-sm">visibility</span>
-                  </button>
-                  <button
-                    className="material-icons opacity-0 group-hover:opacity-100 bg-red-500 hover:bg-red-600 text-white rounded-full w-8 h-8 flex items-center justify-center transition"
-                    title="Delete"
-                  >
-                    <span className="material-icons text-sm">delete</span>
-                  </button>
-                </td>
+      {invoiceList?.length > 0 ? (
+        <div className="overflow-x-auto rounded-lg border border-gray-200">
+          <table className="min-w-full text-sm text-left">
+            <thead className="bg-gray-100 text-gray-700 uppercase text-xs">
+              <tr>
+                <th className="px-5 py-3 font-semibold">SL</th>
+                <th className="px-5 py-3 font-semibold">Inv By</th>
+                <th className="px-5 py-3 font-semibold text-end">Discount</th>
+                <th className="px-5 py-3 font-semibold text-end">Vat</th>
+                <th className="px-5 py-3 font-semibold text-end">Total</th>
+                <th className="px-5 py-3 font-semibold">Status</th>
+                <th className="px-5 py-3 font-semibold text-end">Action</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+            </thead>
+            <tbody className="divide-y divide-gray-200">
+              {invoiceList?.map((inv, indx) => (
+                <tr
+                  key={indx}
+                  className="hover:bg-gray-50 dark:hover:bg-neutral-700 group transition"
+                >
+                  <td className="px-5 py-3 text-gray-700">{indx + 1}</td>
+                  <td className="px-5 py-3 text-gray-700">
+                    {inv?.user?.first_name || ""} {inv?.user?.last_name || ""}
+                  </td>
+                  <td className="px-5 py-3 text-gray-700 text-end">
+                    {inv?.discount || 0}
+                  </td>
+                  <td className="px-5 py-3 text-gray-700 text-end">
+                    {inv?.vat_amount || 0}
+                  </td>
+                  <td className="px-5 py-3 text-gray-700 text-end">
+                    {inv?.payable || 0}
+                  </td>
+                  <td className="px-5 py-3 text-gray-700">
+                    {inv.status || ""}
+                  </td>
+                  <td className="px-5 py-3 flex items-end justify-end gap-3 text-end">
+                    <button
+                      onClick={() => viewInvHandler(inv)}
+                      className="material-icons opacity-0 group-hover:opacity-100 bg-purple-600 hover:bg-purple-700 text-white rounded-full w-8 h-8 flex items-center justify-center transition"
+                      title="View"
+                    >
+                      <span className="material-icons text-sm">visibility</span>
+                    </button>
+                    <button
+                      className="material-icons opacity-0 group-hover:opacity-100 bg-red-500 hover:bg-red-600 text-white rounded-full w-8 h-8 flex items-center justify-center transition"
+                      title="Delete"
+                    >
+                      <span className="material-icons text-sm">delete</span>
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      ) : (
+        <div className="p-4">
+          <SkeletonList count={4} />
+        </div>
+      )}
 
       {/* Pagination */}
       <div className="flex justify-between items-center mt-6 text-sm text-gray-600">

@@ -1,6 +1,7 @@
 "use client";
 
 import { useAlert } from "@/context/AlertContext";
+import Image from "next/image";
 import { useEffect, useState } from "react";
 import { CSSTransition } from "react-transition-group";
 
@@ -314,7 +315,9 @@ const AddProduct = ({
                   className="cursor-pointer w-20 h-20 bg-gray-100 dark:bg-neutral-700 rounded-lg flex items-center justify-center overflow-hidden border border-gray-300 relative group"
                 >
                   {preview ? (
-                    <img
+                    <Image
+                      width={100}
+                      height={100}
                       src={preview}
                       alt="Product"
                       className="w-full h-full object-cover"

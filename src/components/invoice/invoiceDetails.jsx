@@ -70,6 +70,7 @@ const InvoiceDetail = ({ closeModalHandler, invInfo }) => {
                 alt="Logo"
                 width={80}
                 height={40}
+                priority
                 className="ml-auto print:ml-auto print:mr-0"
               />
               <p className="text-sm font-semibold text-gray-800 dark:text-white mt-2">

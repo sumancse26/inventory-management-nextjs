@@ -6,6 +6,7 @@ import {
   deleteCategoryAction,
   updateCategoryAction,
 } from "@/app/actions/categoryAction";
+import SkeletonList from "@/components/skeleton";
 import { useAlert } from "@/context/AlertContext";
 import { useApiLoader } from "@/lib/useApiLoader";
 import moment from "moment";
@@ -117,56 +118,62 @@ const CategoryList = () => {
               </div>
 
               {/* Table */}
-              <div className="max-h-[calc(100vh-280px)] overflow-y-auto">
-                <table className="min-w-full divide-y divide-gray-200 dark:divide-neutral-700">
-                  <thead className="bg-gray-50 dark:bg-neutral-900">
-                    <tr className="group hover:bg-gray-50 dark:hover:bg-neutral-700 transition">
-                      <th className="text-center px-4 py-3 text-xs font-semibold uppercase text-gray-700 dark:text-neutral-300">
-                        SL
-                      </th>
-                      <th className="text-left px-4 py-3 text-xs font-semibold uppercase text-gray-700 dark:text-neutral-300">
-                        Name
-                      </th>
-                      <th className="text-left px-4 py-3 text-xs font-semibold uppercase text-gray-700 dark:text-neutral-300">
-                        Created
-                      </th>
-                      <th className="text-right px-4 py-3"></th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-gray-200 dark:divide-neutral-700">
-                    {categories.map((category, index) => (
-                      <tr
-                        className="hover:bg-gray-50 dark:hover:bg-neutral-700 group transition"
-                        key={index}
-                      >
-                        <td className="text-center px-4 py-3 text-sm font-semibold text-gray-800 dark:text-neutral-200">
-                          {index + 1}
-                        </td>
-                        <td className="px-4 py-3 text-sm font-medium text-gray-800 dark:text-neutral-200">
-                          {category.name}
-                        </td>
-                        <td className="px-4 py-3 text-sm text-gray-500 dark:text-neutral-400">
-                          {moment(category.created_at).format("D MMMM YYYY")}
-                        </td>
-                        <td className="px-4 py-3 flex justify-end gap-2">
-                          <button
-                            onClick={() => editCategoryHandler(category)}
-                            className="material-icons opacity-0 group-hover:opacity-100 bg-purple-600 hover:bg-purple-700 text-white rounded-full w-8 h-8 flex items-center justify-center transition"
-                          >
-                            edit
-                          </button>
-                          <button
-                            onClick={() => deleteCategoryHandler(category)}
-                            className="material-icons opacity-0 group-hover:opacity-100 bg-red-500 hover:bg-red-600 text-white rounded-full w-8 h-8 flex items-center justify-center transition"
-                          >
-                            delete
-                          </button>
-                        </td>
+              {categories.length > 0 ? (
+                <div className="max-h-[calc(100vh-280px)] overflow-y-auto">
+                  <table className="min-w-full divide-y divide-gray-200 dark:divide-neutral-700">
+                    <thead className="bg-gray-50 dark:bg-neutral-900">
+                      <tr className="group hover:bg-gray-50 dark:hover:bg-neutral-700 transition">
+                        <th className="text-center px-4 py-3 text-xs font-semibold uppercase text-gray-700 dark:text-neutral-300">
+                          SL
+                        </th>
+                        <th className="text-left px-4 py-3 text-xs font-semibold uppercase text-gray-700 dark:text-neutral-300">
+                          Name
+                        </th>
+                        <th className="text-left px-4 py-3 text-xs font-semibold uppercase text-gray-700 dark:text-neutral-300">
+                          Created
+                        </th>
+                        <th className="text-right px-4 py-3"></th>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+                    </thead>
+                    <tbody className="divide-y divide-gray-200 dark:divide-neutral-700">
+                      {categories.map((category, index) => (
+                        <tr
+                          className="hover:bg-gray-50 dark:hover:bg-neutral-700 group transition"
+                          key={index}
+                        >
+                          <td className="text-center px-4 py-3 text-sm font-semibold text-gray-800 dark:text-neutral-200">
+                            {index + 1}
+                          </td>
+                          <td className="px-4 py-3 text-sm font-medium text-gray-800 dark:text-neutral-200">
+                            {category.name}
+                          </td>
+                          <td className="px-4 py-3 text-sm text-gray-500 dark:text-neutral-400">
+                            {moment(category.created_at).format("D MMMM YYYY")}
+                          </td>
+                          <td className="px-4 py-3 flex justify-end gap-2">
+                            <button
+                              onClick={() => editCategoryHandler(category)}
+                              className="material-icons opacity-0 group-hover:opacity-100 bg-purple-600 hover:bg-purple-700 text-white rounded-full w-8 h-8 flex items-center justify-center transition"
+                            >
+                              edit
+                            </button>
+                            <button
+                              onClick={() => deleteCategoryHandler(category)}
+                              className="material-icons opacity-0 group-hover:opacity-100 bg-red-500 hover:bg-red-600 text-white rounded-full w-8 h-8 flex items-center justify-center transition"
+                            >
+                              delete
+                            </button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              ) : (
+                <div className="p-4">
+                  <SkeletonList count={4} />
+                </div>
+              )}
 
               {/* Footer */}
               <div className="px-6 py-4 flex flex-col md:flex-row justify-between md:items-center gap-3 border-t border-gray-200 dark:border-neutral-700">

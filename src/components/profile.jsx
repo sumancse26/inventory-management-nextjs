@@ -4,6 +4,7 @@ import { getProfileAction } from "@/app/actions/authAction";
 import { useAlert } from "@/context/AlertContext";
 import { useApiLoader } from "@/lib/useApiLoader";
 import { updateProfile } from "@/services/inventory";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { NextResponse } from "next/server";
 import { useEffect, useState } from "react";
@@ -42,7 +43,7 @@ const UpdateProfile = () => {
         });
 
         if (profile.user?.image) {
-          setPreview(profile.user?.image);
+          setPreview(profile.user?.image || null);
         }
       }
       stop();
@@ -107,11 +108,22 @@ const UpdateProfile = () => {
 
       <div className="flex justify-center mb-6">
         <div className="relative w-28 h-28">
-          <img
-            src={preview || ""}
+          {preview && (
+            <Image
+              src={preview}
+              width={200}
+              height={200}
+              alt="Profile"
+              className="w-28 h-28 rounded-full object-cover border-2 border-indigo-500"
+            />
+          )}
+          {/* <Image
+            src={preview}
+            width={200}
+            height={200}
             alt="Profile"
             className="w-28 h-28 rounded-full object-cover border-2 border-indigo-500"
-          />
+          /> */}
           <label className="absolute bottom-0 right-0 bg-indigo-600 p-1 rounded-full cursor-pointer hover:bg-indigo-700">
             <input
               type="file"

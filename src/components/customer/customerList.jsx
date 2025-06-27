@@ -6,6 +6,7 @@ import {
   saveCustomerAction,
   updateCustomerAction,
 } from "@/app/actions/customerAction";
+import SkeletonList from "@/components/skeleton";
 import { useAlert } from "@/context/AlertContext";
 import { useApiLoader } from "@/lib/useApiLoader";
 import moment from "moment";
@@ -135,69 +136,75 @@ const CustomerList = () => {
             </div>
 
             {/* Table */}
-            <div className="max-h-[calc(100vh-280px)] overflow-y-auto">
-              <table className="min-w-full divide-y divide-gray-200 dark:divide-neutral-700 text-sm">
-                <thead className="bg-gray-50 dark:bg-neutral-900 sticky top-0 z-10">
-                  <tr>
-                    {[
-                      "SL",
-                      "Name",
-                      "Email",
-                      "Mobile",
-                      "Created",
-                      "Actions",
-                    ].map((col, idx) => (
-                      <th
-                        key={idx}
-                        className={`px-6 py-3 text-left font-semibold uppercase tracking-wide text-gray-700 dark:text-neutral-300 ${
-                          idx === 0 ? "text-center" : ""
-                        }`}
-                      >
-                        {col}
-                      </th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-100 dark:divide-neutral-700">
-                  {customers.map((customer, idx) => (
-                    <tr
-                      className="group hover:bg-gray-50 dark:hover:bg-neutral-700 transition"
-                      key={idx}
-                    >
-                      <td className="text-start px-6   py-3 font-semibold text-gray-800 dark:text-white">
-                        {idx + 1}
-                      </td>
-                      <td className="px-6 py-3 font-medium text-gray-800 dark:text-white">
-                        {customer.name || ""}
-                      </td>
-                      <td className="px-6 py-3 text-gray-500 dark:text-neutral-400">
-                        {customer.email || ""}
-                      </td>
-                      <td className="px-6 py-3 text-gray-500 dark:text-neutral-400">
-                        {customer.mobile || ""}
-                      </td>
-                      <td className="px-6 py-3 text-gray-500 dark:text-neutral-400">
-                        {moment(customer.created_at).format("D MMMM YYYY")}
-                      </td>
-                      <td className="px-6 py-3 flex justify-end gap-2">
-                        <button
-                          onClick={() => editCustomer(customer)}
-                          className="material-icons opacity-0 group-hover:opacity-100 bg-purple-600 hover:bg-purple-700 text-white rounded-full w-8 h-8 flex items-center justify-center transition"
+            {customers.length > 0 ? (
+              <div className="max-h-[calc(100vh-280px)] overflow-y-auto">
+                <table className="min-w-full divide-y divide-gray-200 dark:divide-neutral-700 text-sm">
+                  <thead className="bg-gray-50 dark:bg-neutral-900 sticky top-0 z-10">
+                    <tr>
+                      {[
+                        "SL",
+                        "Name",
+                        "Email",
+                        "Mobile",
+                        "Created",
+                        "Actions",
+                      ].map((col, idx) => (
+                        <th
+                          key={idx}
+                          className={`px-6 py-3 text-left font-semibold uppercase tracking-wide text-gray-700 dark:text-neutral-300 ${
+                            idx === 0 ? "text-center" : ""
+                          }`}
                         >
-                          edit
-                        </button>
-                        <button
-                          onClick={() => deleteCustomerHandler(customer)}
-                          className="material-icons opacity-0 group-hover:opacity-100 bg-red-500 hover:bg-red-600 text-white rounded-full w-8 h-8 flex items-center justify-center transition"
-                        >
-                          delete
-                        </button>
-                      </td>
+                          {col}
+                        </th>
+                      ))}
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+                  </thead>
+                  <tbody className="divide-y divide-gray-100 dark:divide-neutral-700">
+                    {customers.map((customer, idx) => (
+                      <tr
+                        className="group hover:bg-gray-50 dark:hover:bg-neutral-700 transition"
+                        key={idx}
+                      >
+                        <td className="text-start px-6   py-3 font-semibold text-gray-800 dark:text-white">
+                          {idx + 1}
+                        </td>
+                        <td className="px-6 py-3 font-medium text-gray-800 dark:text-white">
+                          {customer.name || ""}
+                        </td>
+                        <td className="px-6 py-3 text-gray-500 dark:text-neutral-400">
+                          {customer.email || ""}
+                        </td>
+                        <td className="px-6 py-3 text-gray-500 dark:text-neutral-400">
+                          {customer.mobile || ""}
+                        </td>
+                        <td className="px-6 py-3 text-gray-500 dark:text-neutral-400">
+                          {moment(customer.created_at).format("D MMMM YYYY")}
+                        </td>
+                        <td className="px-6 py-3 flex justify-end gap-2">
+                          <button
+                            onClick={() => editCustomer(customer)}
+                            className="material-icons opacity-0 group-hover:opacity-100 bg-purple-600 hover:bg-purple-700 text-white rounded-full w-8 h-8 flex items-center justify-center transition"
+                          >
+                            edit
+                          </button>
+                          <button
+                            onClick={() => deleteCustomerHandler(customer)}
+                            className="material-icons opacity-0 group-hover:opacity-100 bg-red-500 hover:bg-red-600 text-white rounded-full w-8 h-8 flex items-center justify-center transition"
+                          >
+                            delete
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            ) : (
+              <div className="p-4">
+                <SkeletonList count={4} />
+              </div>
+            )}
 
             {/* Footer */}
             <div className="px-6 py-4 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 border-t border-gray-200 dark:border-neutral-700">

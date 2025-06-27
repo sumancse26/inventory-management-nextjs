@@ -69,9 +69,7 @@ export const POST = async (req: NextRequest): Promise<NextResponse> => {
     let fileUrl = "";
     let fullPath = "";
 
-    // if (!image) {
-    //   return NextResponse.json({ error: "Image is required" }, { status: 400 });
-    // }
+ 
 
     if (
       image &&

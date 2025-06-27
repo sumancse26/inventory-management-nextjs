@@ -4,9 +4,11 @@ import {
   deleteProductAction,
   productListAction,
 } from "@/app/actions/productAction";
+import SkeletonList from "@/components/skeleton";
 import { useAlert } from "@/context/AlertContext";
 import { useApiLoader } from "@/lib/useApiLoader";
 import { addProduct, updateProduct } from "@/services/product";
+import Image from "next/image";
 import { NextResponse } from "next/server";
 import { useEffect, useState } from "react";
 import AddProduct from "./addProduct";
@@ -129,94 +131,102 @@ const ProductList = () => {
               </div>
 
               {/* Table */}
-              <div className="overflow-auto max-h-[calc(100vh-300px)]">
-                <table className="min-w-full divide-y divide-gray-200 dark:divide-neutral-700 text-sm">
-                  <thead className="bg-gray-50 dark:bg-neutral-700">
-                    <tr>
-                      <th>
-                        <span className="font-semibold text-xs uppercase tracking-wider text-gray-800 dark:text-neutral-200">
-                          SL
-                        </span>
-                      </th>
-                      <th className="px-1 py-2 font-semibold text-xs uppercase tracking-wider text-gray-800 dark:text-neutral-200 text-start">
-                        Image
-                      </th>
-                      <th className="px-1 py-2 font-semibold text-xs uppercase tracking-wider text-gray-800 dark:text-neutral-200  text-start">
-                        Name
-                      </th>
-                      <th className="px-1 py-2 font-semibold text-xs uppercase tracking-wider text-gray-800 dark:text-neutral-200  text-end">
-                        Price (TK)
-                      </th>
-                      <th className="px-1 py-2 font-semibold text-xs uppercase tracking-wider text-gray-800 dark:text-neutral-200  text-end">
-                        Stock
-                      </th>
-                      <th className="px-1 py-2 font-semibold text-xs uppercase tracking-wider text-gray-800 dark:text-neutral-200  text-center">
-                        VAT (%)
-                      </th>
-                      <th className="px-1 py-2 font-semibold text-xs uppercase tracking-wider text-gray-800 dark:text-neutral-200  text-end">
-                        Discount (TK)
-                      </th>
-                      <th className="px-1 py-2 font-semibold text-xs uppercase tracking-wider text-gray-800 dark:text-neutral-200">
-                        Action
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-gray-100 dark:divide-neutral-700">
-                    {productList.map((product, indx) => (
-                      <tr
-                        className="group hover:bg-gray-50 dark:hover:bg-neutral-700 transition"
-                        key={indx}
-                      >
-                        <td className="text-center px-6 py-3 font-medium text-gray-800 dark:text-white">
-                          {indx + 1}
-                        </td>
-                        <td className="px-1 py-2 text-start">
-                          {product?.img_url != "" ? (
-                            <img
-                              src={product?.img_url || null}
-                              alt="Product"
-                              className="w-10 h-10 rounded-md bg-gray-100"
-                            />
-                          ) : (
-                            ""
-                          )}
-                        </td>
-                        <td className="px-1 py-2 text-gray-600 dark:text-neutral-300  text-start">
-                          {product?.name || ""}
-                        </td>
-                        <td className="px-1 py-2 text-gray-600 dark:text-neutral-300 text-end">
-                          {product.price || 0}
-                        </td>
-                        <td className="px-1 py-2 text-gray-600 dark:text-neutral-300 text-end">
-                          {product.stock || 0} {product.uom_name || ""}
-                        </td>
-                        <td className="px-1 py-2 text-gray-600 dark:text-neutral-300 text-center">
-                          {product.vat_pct || 0}
-                        </td>
-                        <td className="px-1 py-2 text-gray-600 dark:text-neutral-300 text-end">
-                          {product.discount || 0}
-                        </td>
-                        <td className="px-1 py-2 flex justify-end gap-2">
-                          <button
-                            onClick={() => updateProductHandler(product)}
-                            className="material-icons opacity-0 group-hover:opacity-100 bg-purple-600 hover:bg-purple-700 text-white rounded-full w-8 h-8 flex items-center justify-center transition"
-                          >
-                            edit
-                          </button>
-                          <button
-                            onClick={() => deleteProductHandler(product.id)}
-                            className="material-icons opacity-0 group-hover:opacity-100 bg-red-500 hover:bg-red-600 text-white rounded-full w-8 h-8 flex items-center justify-center transition"
-                          >
-                            delete
-                          </button>
-                        </td>
+              {productList.length > 0 ? (
+                <div className="overflow-auto max-h-[calc(100vh-300px)]">
+                  <table className="min-w-full divide-y divide-gray-200 dark:divide-neutral-700 text-sm">
+                    <thead className="bg-gray-50 dark:bg-neutral-700">
+                      <tr>
+                        <th>
+                          <span className="font-semibold text-xs uppercase tracking-wider text-gray-800 dark:text-neutral-200">
+                            SL
+                          </span>
+                        </th>
+                        <th className="px-1 py-2 font-semibold text-xs uppercase tracking-wider text-gray-800 dark:text-neutral-200 text-start">
+                          Image
+                        </th>
+                        <th className="px-1 py-2 font-semibold text-xs uppercase tracking-wider text-gray-800 dark:text-neutral-200  text-start">
+                          Name
+                        </th>
+                        <th className="px-1 py-2 font-semibold text-xs uppercase tracking-wider text-gray-800 dark:text-neutral-200  text-end">
+                          Price (TK)
+                        </th>
+                        <th className="px-1 py-2 font-semibold text-xs uppercase tracking-wider text-gray-800 dark:text-neutral-200  text-end">
+                          Stock
+                        </th>
+                        <th className="px-1 py-2 font-semibold text-xs uppercase tracking-wider text-gray-800 dark:text-neutral-200  text-center">
+                          VAT (%)
+                        </th>
+                        <th className="px-1 py-2 font-semibold text-xs uppercase tracking-wider text-gray-800 dark:text-neutral-200  text-end">
+                          Discount (TK)
+                        </th>
+                        <th className="px-1 py-2 font-semibold text-xs uppercase tracking-wider text-gray-800 dark:text-neutral-200">
+                          Action
+                        </th>
                       </tr>
-                    ))}
+                    </thead>
+                    <tbody className="divide-y divide-gray-100 dark:divide-neutral-700">
+                      {productList.map((product, indx) => (
+                        <tr
+                          className="group hover:bg-gray-50 dark:hover:bg-neutral-700 transition"
+                          key={indx}
+                        >
+                          <td className="text-center px-6 py-3 font-medium text-gray-800 dark:text-white">
+                            {indx + 1}
+                          </td>
+                          <td className="px-1 py-2 text-start">
+                            {product?.img_url != "" ? (
+                              <Image
+                                src={product?.img_url || null}
+                                alt="Product"
+                                width={40}
+                                height={40}
+                                className="w-10 h-10 rounded-md bg-gray-100"
+                              />
+                            ) : (
+                              ""
+                            )}
+                          </td>
+                          <td className="px-1 py-2 text-gray-600 dark:text-neutral-300  text-start">
+                            {product?.name || ""}
+                          </td>
+                          <td className="px-1 py-2 text-gray-600 dark:text-neutral-300 text-end">
+                            {product.price || 0}
+                          </td>
+                          <td className="px-1 py-2 text-gray-600 dark:text-neutral-300 text-end">
+                            {product.stock || 0} {product.uom_name || ""}
+                          </td>
+                          <td className="px-1 py-2 text-gray-600 dark:text-neutral-300 text-center">
+                            {product.vat_pct || 0}
+                          </td>
+                          <td className="px-1 py-2 text-gray-600 dark:text-neutral-300 text-end">
+                            {product.discount || 0}
+                          </td>
+                          <td className="px-1 py-2 flex justify-end gap-2">
+                            <button
+                              onClick={() => updateProductHandler(product)}
+                              className="material-icons opacity-0 group-hover:opacity-100 bg-purple-600 hover:bg-purple-700 text-white rounded-full w-8 h-8 flex items-center justify-center transition"
+                            >
+                              edit
+                            </button>
+                            <button
+                              onClick={() => deleteProductHandler(product.id)}
+                              className="material-icons opacity-0 group-hover:opacity-100 bg-red-500 hover:bg-red-600 text-white rounded-full w-8 h-8 flex items-center justify-center transition"
+                            >
+                              delete
+                            </button>
+                          </td>
+                        </tr>
+                      ))}
 
-                    {/* Add more rows as needed */}
-                  </tbody>
-                </table>
-              </div>
+                      {/* Add more rows as needed */}
+                    </tbody>
+                  </table>
+                </div>
+              ) : (
+                <div className="p-4">
+                  <SkeletonList count={4} />
+                </div>
+              )}
 
               {/* Footer */}
               <div className="px-6 py-4 flex flex-col gap-3 md:flex-row md:justify-between md:items-center border-t border-gray-200 dark:border-neutral-700">

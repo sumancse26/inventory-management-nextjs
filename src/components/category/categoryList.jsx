@@ -9,6 +9,7 @@ import {
 import SkeletonList from "@/components/skeleton";
 import { useAlert } from "@/context/AlertContext";
 import { useApiLoader } from "@/lib/useApiLoader";
+import ConfirmDialog from "@components/confirmDialog";
 import moment from "moment";
 import { useEffect, useState } from "react";
 import AddCategory from "./addCategory";
@@ -17,6 +18,8 @@ const CategoryList = () => {
   const [openModal, setOpenModal] = useState(false);
   const [categories, setCategories] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState({});
+  const [showDialog, setShowDialog] = useState(false);
+  const [categoryToDelete, setCategoryToDelete] = useState({});
 
   const { start, stop } = useApiLoader();
   const { showAlert } = useAlert();
@@ -66,20 +69,36 @@ const CategoryList = () => {
     setOpenModal(true);
   };
 
-  const deleteCategoryHandler = async (category) => {
+  const deleteCategoryHandler = async (cat) => {
+    setShowDialog(true);
+    setCategoryToDelete(cat);
+  };
+
+  const handleOk = async () => {
     try {
       start();
-      const res = await deleteCategoryAction(category?.id);
-      showAlert(res.message, "success");
+      setShowDialog(false);
+      const res = await deleteCategoryAction(categoryToDelete?.id);
+
       if (res.success) {
-        const filteredList = categories.filter((c) => c.id !== category?.id);
+        showAlert(res.message, "success");
+        const filteredList = categories.filter(
+          (c) => c.id !== categoryToDelete?.id
+        );
         setCategories(filteredList);
       }
+      setShowDialog(false);
       stop();
     } catch (err) {
+      showAlert(res.message, "error");
       stop();
+      setShowDialog(false);
       console.error("Error deleting category:", err);
     }
+  };
+
+  const handleCancel = () => {
+    setShowDialog(false);
   };
 
   const openModalHandler = () => {
@@ -205,6 +224,14 @@ const CategoryList = () => {
             category={selectedCategory}
             saveCategory={saveCategoryHandler}
             hideModal={hideModalHandler}
+          />
+        )}
+
+        {showDialog && (
+          <ConfirmDialog
+            message="Are you sure you want to continue?"
+            onOk={handleOk}
+            onCancel={handleCancel}
           />
         )}
       </div>

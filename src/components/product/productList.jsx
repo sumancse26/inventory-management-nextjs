@@ -8,6 +8,7 @@ import SkeletonList from "@/components/skeleton";
 import { useAlert } from "@/context/AlertContext";
 import { useApiLoader } from "@/lib/useApiLoader";
 import { addProduct, updateProduct } from "@/services/product";
+import ConfirmDialog from "@components/confirmDialog";
 import Image from "next/image";
 import { NextResponse } from "next/server";
 import { useEffect, useState } from "react";
@@ -18,6 +19,8 @@ const ProductList = () => {
   const [productList, setProductList] = useState([]);
   const [categoryList, setCategoryList] = useState([]);
   const [selectedProduct, setSelectedProduct] = useState({});
+  const [showDialog, setShowDialog] = useState(false);
+  const [productToDelete, setProductToDelete] = useState({});
 
   const { start, stop } = useApiLoader();
   const { showAlert } = useAlert();
@@ -88,20 +91,33 @@ const ProductList = () => {
   };
 
   const deleteProductHandler = async (id) => {
+    setProductToDelete(id);
+    setShowDialog(true);
+  };
+
+  const handleOk = async () => {
     try {
       start();
-      const res = await deleteProductAction(id);
+      const res = await deleteProductAction(productToDelete);
+      setShowDialog(false);
       if (res.success) {
-        const filteredList = productList.filter((p) => p.id !== id);
+        const filteredList = productList.filter(
+          (p) => p.id !== productToDelete
+        );
         setProductList(filteredList);
         stop();
         showAlert(res.message, "success");
       }
     } catch (err) {
+      setShowDialog(false);
       console.log(err.message);
       stop();
       showAlert(err.message, "error");
     }
+  };
+
+  const handleCancel = () => {
+    setShowDialog(false);
   };
 
   return (
@@ -284,6 +300,14 @@ const ProductList = () => {
           categoryList={categoryList}
           handleSubmit={handleSubmit}
           selectedProduct={selectedProduct}
+        />
+      )}
+
+      {showDialog && (
+        <ConfirmDialog
+          message="Are you sure you want to continue?"
+          onOk={handleOk}
+          onCancel={handleCancel}
         />
       )}
     </>

@@ -6,7 +6,9 @@ import { productListAction } from "@/app/actions/productAction";
 import SearchableDropdown from "@/components/searchableDropdown";
 import { useAlert } from "@/context/AlertContext";
 import { useApiLoader } from "@/lib/useApiLoader";
+import ConfirmDialog from "@components/confirmDialog";
 import Image from "next/image";
+import { useRouter } from "next/navigation.js";
 import { useEffect, useState } from "react";
 import InvoiceSkeleton from "./invoiceSkeleton.jsx";
 
@@ -17,9 +19,12 @@ const Sale = () => {
   const [addedProduct, setAddedProduct] = useState([]);
   const [selectedCustomer, setSelectedCustomer] = useState({});
   const [discount, setDiscount] = useState(0);
+  const [showDialog, setShowDialog] = useState(false);
+  // const [saleToDelete, setSaleToDelete] = useState({});
 
   const { showAlert } = useAlert();
   const { start, stop } = useApiLoader();
+  const router = useRouter();
 
   useEffect(() => {
     getCustomerList();
@@ -125,10 +130,15 @@ const Sale = () => {
   };
 
   const confirmSaleHandler = async () => {
+    setShowDialog(true);
+  };
+
+  const handleOk = async () => {
     try {
       if (!selectedCustomer?.id)
         return showAlert("Please select a customer", "error");
       start();
+      setShowDialog(false);
       const data = {
         customer_id: selectedCustomer.id,
         is_gross_total: discount > 0 ? true : false,
@@ -149,12 +159,20 @@ const Sale = () => {
       };
 
       const res = await confirmSaleAction(data);
-      stop();
-      showAlert(res.message, "success");
+      if (res.success) {
+        router.push("/dashboard");
+        setAddedProduct([]);
+        stop();
+        showAlert(res.message, "success");
+      }
     } catch (err) {
       stop();
       showAlert(err.message, "error");
     }
+  };
+
+  const handleCancel = () => {
+    setShowDialog(false);
   };
 
   const removeProduct = (data) => {
@@ -369,6 +387,14 @@ const Sale = () => {
               </div>
             </div>
           </div>
+
+          {showDialog && (
+            <ConfirmDialog
+              message="Are you sure you want to continue?"
+              onOk={handleOk}
+              onCancel={handleCancel}
+            />
+          )}
         </div>
       ) : (
         <div>

@@ -9,6 +9,7 @@ import {
 import SkeletonList from "@/components/skeleton";
 import { useAlert } from "@/context/AlertContext";
 import { useApiLoader } from "@/lib/useApiLoader";
+import ConfirmDialog from "@components/confirmDialog";
 import moment from "moment";
 import { useEffect, useState } from "react";
 import AddCustomer from "./addCustomer";
@@ -22,6 +23,9 @@ const CustomerList = () => {
     email: "",
     mobile: "",
   });
+
+  const [showDialog, setShowDialog] = useState(false);
+  const [customerToDelete, setCustomerToDelete] = useState({});
 
   const { start, stop } = useApiLoader();
   const { showAlert } = useAlert();
@@ -84,18 +88,8 @@ const CustomerList = () => {
   };
 
   const deleteCustomerHandler = async (data) => {
-    try {
-      start();
-      const res = await deleteCustomerAction({ id: data?.id });
-      const filteredCustomer = customers.filter((cus) => cus.id !== data?.id);
-      setCustomers(filteredCustomer);
-      showAlert(res.message, "success");
-      stop();
-    } catch (err) {
-      showAlert(err.message, "error");
-      stop();
-      console.log(err);
-    }
+    setShowDialog(true);
+    setCustomerToDelete(data);
   };
 
   const openCustomerModal = () => {
@@ -106,6 +100,32 @@ const CustomerList = () => {
       email: "",
       mobile: "",
     });
+  };
+
+  const handleOk = async () => {
+    try {
+      start();
+      const res = await deleteCustomerAction({ id: customerToDelete?.id });
+
+      if (res.success) {
+        const filteredCustomer = customers.filter(
+          (cus) => cus.id !== customerToDelete?.id
+        );
+        setCustomers(filteredCustomer);
+
+        showAlert(res.message, "success");
+        stop();
+      }
+      setShowDialog(false);
+    } catch (err) {
+      showAlert(err.message, "error");
+      stop();
+      setShowDialog(false);
+      console.log(err);
+    }
+  };
+  const handleCancel = () => {
+    setShowDialog(false);
   };
 
   const handleClose = (val) => {
@@ -247,6 +267,14 @@ const CustomerList = () => {
           onClose={handleClose}
           saveCustomer={saveCustomerHandler}
           customer={selectedCustomer}
+        />
+      )}
+
+      {showDialog && (
+        <ConfirmDialog
+          message="Are you sure you want to continue?"
+          onOk={handleOk}
+          onCancel={handleCancel}
         />
       )}
     </div>

@@ -13,7 +13,7 @@ export const POST = async (req: NextRequest): Promise<NextResponse> => {
         const customer = await prisma.customers.findFirst({
             where: {
                 user_id: Number(userId),
-                email: body.email
+                email: body.mobile
             }
         });
 
@@ -58,7 +58,9 @@ export const PUT = async (req: NextRequest): Promise<NextResponse> => {
         if (!userId) {
             return NextResponse.json({ message: 'Unauthorized user' }, { status: 400 });
         }
+
         const body = await req.json();
+
         const customer = await prisma.customers.update({
             where: {
                 id: Number(body.id),
@@ -66,7 +68,7 @@ export const PUT = async (req: NextRequest): Promise<NextResponse> => {
             },
             data: {
                 name: body.name,
-                email: body.email,
+                email: body.email || '',
                 mobile: body.mobile
             },
             select: {
@@ -112,6 +114,9 @@ export const GET = async (req: NextRequest): Promise<NextResponse> => {
                 name: true,
                 email: true,
                 mobile: true
+            },
+            orderBy: {
+                id: 'desc'
             }
         });
         return NextResponse.json(
@@ -142,32 +147,32 @@ export const DELETE = async (req: NextRequest): Promise<NextResponse> => {
             return NextResponse.json({ message: 'Unauthorized user' }, { status: 400 });
         }
         const body = await req.json();
-        const invoices = await prisma.invoices.findMany({
-            where: {
-                customer_id: Number(body.id),
-                user_id: Number(userId)
-            },
-            select: {
-                id: true
-            }
-        });
+        // const invoices = await prisma.invoices.findMany({
+        //     where: {
+        //         customer_id: Number(body.id),
+        //         user_id: Number(userId)
+        //     },
+        //     select: {
+        //         id: true
+        //     }
+        // });
 
-        const invoiceIds = invoices.map((inv) => inv.id);
+        //const invoiceIds = invoices.map((inv) => inv.id);
 
         // 2. Delete all related invoice_products
-        await prisma.invoice_products.deleteMany({
-            where: {
-                invoice_id: { in: invoiceIds }
-            }
-        });
+        // await prisma.invoice_products.deleteMany({
+        //     where: {
+        //         invoice_id: { in: invoiceIds }
+        //     }
+        // });
 
         // 3. Delete all invoices of this customer
-        await prisma.invoices.deleteMany({
-            where: {
-                id: { in: invoiceIds },
-                user_id: Number(userId)
-            }
-        });
+        // await prisma.invoices.deleteMany({
+        //     where: {
+        //         id: { in: invoiceIds },
+        //         user_id: Number(userId)
+        //     }
+        // });
 
         // 4. Delete the customer
         await prisma.customers.delete({

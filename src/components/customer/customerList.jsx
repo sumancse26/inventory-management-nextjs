@@ -69,7 +69,6 @@ const CustomerList = () => {
             start();
             if (selectedCustomer?.id) {
                 const res = await updateCustomerAction({
-                    ...customer,
                     id: selectedCustomer?.id
                 });
                 setSelectedCustomer({

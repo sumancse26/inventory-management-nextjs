@@ -8,99 +8,105 @@ generator client {
 }
 
 model users {
-    id                  Int         @id @default(autoincrement())
-    first_name          String      @db.VarChar(50)
-    last_name           String      @db.VarChar(50)
-    image               String?     @default("") @db.VarChar(100)
-    email               String      @unique  @db.VarChar(50)
-    mobile              String      @db.VarChar(20)
-    password            String      
-    otp                 String      @db.VarChar(10)
-    role                Int         @default(2)
-    created_at          DateTime    @default(now())
-    updated_at          DateTime    @updatedAt
+  id                Int                @id @default(autoincrement())
+  first_name        String             @db.VarChar(50)
+  last_name         String             @db.VarChar(50)
+  image             String?            @default("") @db.VarChar(100)
+  email             String             @unique @db.VarChar(50)
+  mobile            String             @db.VarChar(20)
+  password          String
+  otp               String             @db.VarChar(10)
+  role              Int                @default(2)
+  created_at        DateTime           @default(now())
+  updated_at        DateTime           @updatedAt
 
-    categories          categories[]
-    products            products[] 
-    customers           customers[] 
-    invoices            invoices[]
-    invoice_products    invoice_products[]
-}
-
-model categories {
-    id                Int           @id @default(autoincrement())
-    name              String        @db.VarChar(50) 
-    user_id           Int
-    created_at        DateTime      @default(now())
-    updated_at        DateTime      @updatedAt
-
-    products           products[]
-    users              users        @relation(fields: [user_id], references: [id], onUpdate: Cascade, onDelete: Restrict)
-}
-
-model products {
-    id                  Int                 @id @default(autoincrement())
-    user_id             Int
-    category_id         Int        
-    name                String              @db.VarChar(100)
-    price               String              @db.VarChar(50)
-    stock               Int                 @default(0)
-    unit_price          String              @default("0") @db.VarChar(50)
-    vat_pct             Int                 @default(0)
-    uom                 Int                 @default(1)
-    uom_name            String              @default("PC")
-    discount            Int                 @default(0)
-    img_url             String?             @default("") @db.VarChar(100)
-    created_at          DateTime            @default(now())
-    updated_at          DateTime            @updatedAt
-
-    users               users               @relation(fields: [user_id], references: [id], onUpdate: Cascade, onDelete: Restrict)
-    categories          categories          @relation(fields: [category_id], references: [id], onUpdate: Cascade, onDelete: Restrict)
-    invoice_products    invoice_products[]
+  categories        categories[]
+  products          products[]
+  customers         customers[]
+  invoices          invoices[]
+  invoice_products  invoice_products[]
 }
 
 model customers {
-    id                  Int          @id @default(autoincrement())
-    name                String       @db.VarChar(50)
-    email               String?      @db.VarChar(50)
-    mobile              String       @db.VarChar(50)
-    user_id             Int        
-    created_at          DateTime     @default(now())
-    updated_at          DateTime     @updatedAt
+  id         Int        @id @default(autoincrement())
+  name       String     @db.VarChar(50)
+  email      String?    @db.VarChar(50)
+  mobile     String     @db.VarChar(50)
+  user_id    Int
+  created_at DateTime   @default(now())
+  updated_at DateTime   @updatedAt
 
-    user    users                    @relation(fields: [user_id], references: [id], onUpdate: Cascade, onDelete: Restrict)
-    invoices invoices[]
+  user       users      @relation(fields: [user_id], references: [id], onDelete: Restrict)
+  invoices   invoices[]
 }
+
+
+model categories {
+  id         Int        @id @default(autoincrement())
+  name       String     @db.VarChar(50)
+  user_id    Int
+  created_at DateTime   @default(now())
+  updated_at DateTime   @updatedAt
+
+  products   products[]
+  users      users      @relation(fields: [user_id], references: [id], onDelete: Restrict)
+}
+
+
+model products {
+  id               Int               @id @default(autoincrement())
+  user_id          Int
+  category_id      Int
+  name             String            @db.VarChar(100)
+  price            String            @db.VarChar(50)
+  stock            Int               @default(0)
+  unit_price       String            @default("0") @db.VarChar(50)
+  vat_pct          Int               @default(0)
+  uom              Int               @default(1)
+  uom_name         String            @default("PC")
+  discount         Int               @default(0)
+  img_url          String?           @default("") @db.VarChar(100)
+  created_at       DateTime          @default(now())
+  updated_at       DateTime          @updatedAt
+
+  users            users             @relation(fields: [user_id], references: [id], onDelete: Restrict)
+  categories       categories        @relation(fields: [category_id], references: [id], onDelete: Cascade)
+  invoice_products invoice_products[]
+}
+
+
 
 model invoices {
-    id                  Int         @id @default(autoincrement())
-    total               String      @db.VarChar(50)
-    discount            String      @db.VarChar(50)
-    vat_pct             Int         @default(0)
-    vat_amount          Int         @default(0)
-    payable             String      @db.VarChar(50) 
-    user_id             Int
-    customer_id         Int 
-    created_at          DateTime    @default(now())
-    updated_at          DateTime    @updatedAt
+  id               Int               @id @default(autoincrement())
+  total            String            @db.VarChar(50)
+  discount         String            @db.VarChar(50)
+  vat_pct          Int               @default(0)
+  vat_amount       Int               @default(0)
+  payable          String            @db.VarChar(50)
+  user_id          Int
+  customer_id      Int
+  created_at       DateTime          @default(now())
+  updated_at       DateTime          @updatedAt
 
-    user                users       @relation(fields: [user_id], references: [id], onUpdate: Cascade, onDelete: Restrict)
-    customer            customers   @relation(fields: [customer_id], references: [id], onUpdate: Cascade, onDelete: Restrict)
-    invoice_products    invoice_products[]
+  user             users             @relation(fields: [user_id], references: [id], onDelete: Restrict)
+  customer         customers         @relation(fields: [customer_id], references: [id], onDelete: Restrict)
+  invoice_products invoice_products[]
 }
+
 
 model invoice_products {
-  id                    Int       @id @default(autoincrement())
-  invoice_id            Int
-  product_name          String    @default("") @db.VarChar(100)
-  product_id            Int
-  user_id               Int
-  qty                   String    @db.VarChar(50)
-  sale_price            String    @db.VarChar(50)
-  created_at            DateTime  @default(now())
-  updated_at            DateTime  @updatedAt
+  id           Int       @id @default(autoincrement())
+  invoice_id   Int
+  product_id   Int?      
+  user_id      Int
+  product_name String    @default("") @db.VarChar(100)
+  qty          String    @db.VarChar(50)
+  sale_price   String    @db.VarChar(50)
+  created_at   DateTime  @default(now())
+  updated_at   DateTime  @updatedAt
 
-  invoice               invoices  @relation(fields: [invoice_id], references: [id], onUpdate: Cascade, onDelete: Restrict)
-  product               products  @relation(fields: [product_id], references: [id], onUpdate: Cascade, onDelete: Restrict)
-  user                  users     @relation(fields: [user_id], references: [id], onUpdate: Cascade, onDelete: Restrict)
+  invoice      invoices  @relation(fields: [invoice_id], references: [id], onDelete: Cascade)
+  product      products? @relation(fields: [product_id], references: [id], onDelete: SetNull)
+  user         users     @relation(fields: [user_id], references: [id], onDelete: Restrict)
 }
+

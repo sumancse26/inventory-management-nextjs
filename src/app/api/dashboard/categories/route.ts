@@ -123,7 +123,6 @@ export const DELETE = async (req: NextRequest): Promise<NextResponse> => {
             return NextResponse.json({ message: 'Unauthorized user' }, { status: 400 });
         }
         const body = await req.json();
-        console.log('Number(userId)', body);
         const products = await prisma.products.findMany({
             where: {
                 category_id: Number(body.id),
@@ -135,13 +134,13 @@ export const DELETE = async (req: NextRequest): Promise<NextResponse> => {
             }
         });
 
-        const productIds = products.map((p) => p.id);
+        //const productIds = products.map((p) => p.id);
 
-        await prisma.invoice_products.deleteMany({
-            where: {
-                product_id: { in: productIds }
-            }
-        });
+        // await prisma.invoice_products.deleteMany({
+        //     where: {
+        //         product_id: { in: productIds }
+        //     }
+        // });
 
         // 2. Delete image files from filesystem
         for (const product of products) {
@@ -169,19 +168,6 @@ export const DELETE = async (req: NextRequest): Promise<NextResponse> => {
             }
         });
 
-        // await prisma.products.deleteMany({
-        //     where: {
-        //         category_id: Number(body.id),
-        //         user_id: Number(userId)
-        //     }
-        // });
-
-        // await prisma.categories.delete({
-        //     where: {
-        //         id: Number(body.id),
-        //         user_id: Number(userId)
-        //     }
-        // });
         return NextResponse.json({ message: 'Category deleted', success: true }, { status: 200 });
     } catch (err) {
         console.log(err);

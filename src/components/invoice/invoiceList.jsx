@@ -96,7 +96,9 @@ const InvoiceList = () => {
                                     <td className="px-5 py-3 text-gray-700 text-end">{inv?.discount || 0}</td>
                                     <td className="px-5 py-3 text-gray-700 text-end">{inv?.vat_amount || 0}</td>
                                     <td className="px-5 py-3 text-gray-700 text-end">{inv?.payable || 0}</td>
-                                    <td className="px-5 py-3 text-gray-700">{inv.status || ''}</td>
+                                    <td className="px-5 py-3 text-gray-700">
+                                        {inv.status == 1 ? 'active' : 'cancelled'}
+                                    </td>
                                     <td className="px-5 py-3 flex items-end justify-end gap-3 text-end">
                                         <button
                                             onClick={() => viewInvHandler(inv)}
@@ -127,7 +129,9 @@ const InvoiceList = () => {
 
             {/* Pagination */}
             <div className="flex justify-between items-center mt-6 text-sm text-gray-600">
-                <p>Showing 1 of 10 entries</p>
+                <p>
+                    Showing <span className="font-bold">{invoiceList?.length || 0}</span> entries
+                </p>
                 <div className="flex items-center gap-2">
                     <button className="flex items-center gap-1 px-4 py-1 rounded-full bg-gray-100 hover:bg-gray-200 transition disabled:opacity-50">
                         <span className="material-icons text-sm">chevron_left</span>

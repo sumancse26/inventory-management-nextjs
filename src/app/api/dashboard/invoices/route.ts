@@ -41,6 +41,7 @@ export const GET = async (req: NextRequest): Promise<NextResponse> => {
                     discount: true,
                     vat_amount: true,
                     payable: true,
+                    status: true,
                     user: {
                         select: {
                             id: true,
@@ -66,6 +67,7 @@ export const GET = async (req: NextRequest): Promise<NextResponse> => {
                     discount: true,
                     vat_amount: true,
                     payable: true,
+                    status: true,
                     user: {
                         select: {
                             id: true,

@@ -1,20 +1,20 @@
-"use server";
-import { getInvoice, getInvoiceInfo, saveInvoice } from "@/services/invoice.js";
+'use server';
+import { getInvoice, getInvoiceInfo, saveInvoice } from '@/services/invoice.js';
 
 export const confirmSaleAction = async (data) => {
-  const res = await saveInvoice(data);
+    const res = await saveInvoice(data);
 
-  return res;
+    return res;
 };
 
 export const invoiceListAction = async () => {
-  const res = await getInvoice();
+    const res = await getInvoice();
 
-  return res;
+    return res;
 };
 
-export const invoiceInfotAction = async (invId) => {
-  const res = await getInvoiceInfo(invId);
+export const invoiceInfoAction = async (invId) => {
+    const res = await getInvoiceInfo(invId);
 
-  return res;
+    return res;
 };

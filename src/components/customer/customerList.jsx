@@ -7,9 +7,8 @@ import {
     updateCustomerAction
 } from '@/app/actions/customerAction';
 import SkeletonList from '@/components/skeleton';
-import { useAlert } from '@/context/AlertContext';
+import { useDialog } from '@/context/DialogContext';
 import { useApiLoader } from '@/lib/useApiLoader';
-import ConfirmDialog from '@components/confirmDialog';
 import EmptyState from '@components/emptyState.jsx';
 import moment from 'moment';
 import { useEffect, useState } from 'react';
@@ -25,12 +24,10 @@ const CustomerList = () => {
         mobile: ''
     });
 
-    const [showDialog, setShowDialog] = useState(false);
-    const [customerToDelete, setCustomerToDelete] = useState({});
     const [showSkeleton, setShowSkeleton] = useState(false);
 
     const { start, stop } = useApiLoader();
-    const { showAlert } = useAlert();
+    const { openDialog } = useDialog();
 
     useEffect(() => {
         fetchCustomerList();
@@ -46,11 +43,9 @@ const CustomerList = () => {
             setCustomers(res.data || []);
             setShowSkeleton(false);
             stop();
-            return res?.data || [];
         } catch (err) {
             stop();
             setShowSkeleton(false);
-            showAlert(err.message, 'error');
         }
     };
 
@@ -66,9 +61,12 @@ const CustomerList = () => {
 
     const saveCustomerHandler = async (customer) => {
         try {
+            await openDialog('You want to save ?', { type: 'confirm' });
             start();
+            let res = {};
             if (selectedCustomer?.id) {
-                const res = await updateCustomerAction({
+                res = await updateCustomerAction({
+                    ...customer,
                     id: selectedCustomer?.id
                 });
                 setSelectedCustomer({
@@ -77,23 +75,18 @@ const CustomerList = () => {
                     email: '',
                     mobile: ''
                 });
-                showAlert(res.message, 'success');
             } else {
-                const res = await saveCustomerAction(customer);
-                showAlert(res.message, 'success');
+                res = await saveCustomerAction(customer);
             }
-
+            await openDialog(res.message, { type: 'success' });
+            setOpenModal(false);
             fetchCustomerList();
             stop();
         } catch (err) {
+            await openDialog(res.message, { type: 'error' });
             stop();
             showAlert(err.message, 'error');
         }
-    };
-
-    const deleteCustomerHandler = async (data) => {
-        setShowDialog(true);
-        setCustomerToDelete(data);
     };
 
     const openCustomerModal = () => {
@@ -106,28 +99,25 @@ const CustomerList = () => {
         });
     };
 
-    const handleOk = async () => {
+    const deleteCustomerHandler = async (data) => {
         try {
+            await openDialog('You want to delete ?', { type: 'confirm' });
             start();
-            const res = await deleteCustomerAction({ id: customerToDelete?.id });
+            const res = await deleteCustomerAction({ id: data?.id });
 
             if (res.success) {
-                const filteredCustomer = customers.filter((cus) => cus.id !== customerToDelete?.id);
+                const filteredCustomer = customers.filter((cus) => cus.id != data?.id);
                 setCustomers(filteredCustomer);
 
-                showAlert(res.message, 'success');
+                await openDialog(res.message, { type: 'success' });
                 stop();
+            } else {
+                await openDialog(res.message, { type: 'error' });
             }
-            setShowDialog(false);
         } catch (err) {
-            showAlert(err.message, 'error');
+            await openDialog(err.message, { type: 'error' });
             stop();
-            setShowDialog(false);
-            console.log(err);
         }
-    };
-    const handleCancel = () => {
-        setShowDialog(false);
     };
 
     const handleClose = (val) => {
@@ -246,10 +236,6 @@ const CustomerList = () => {
             </div>
             {openModal && (
                 <AddCustomer onClose={handleClose} saveCustomer={saveCustomerHandler} customer={selectedCustomer} />
-            )}
-
-            {showDialog && (
-                <ConfirmDialog message="Are you sure you want to continue?" onOk={handleOk} onCancel={handleCancel} />
             )}
         </div>
     );

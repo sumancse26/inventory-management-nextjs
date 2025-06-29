@@ -4,15 +4,14 @@ import { customerListAction } from '@/app/actions/customerAction';
 import { confirmSaleAction } from '@/app/actions/invoiceAction';
 import { productListAction } from '@/app/actions/productAction';
 import SearchableDropdown from '@/components/searchableDropdown';
-import SkeletonList from '@/components/skeleton';
-import { useAlert } from '@/context/AlertContext';
+import { useDialog } from '@/context/DialogContext';
 import { useApiLoader } from '@/lib/useApiLoader';
-import ConfirmDialog from '@components/confirmDialog';
 import EmptyState from '@components/emptyState.jsx';
 import Loader from '@components/loader';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation.js';
 import { useEffect, useState } from 'react';
+import SkeletonList from './invoiceSkeleton';
 
 const Sale = () => {
     const [customerList, setCustomerList] = useState([]);
@@ -21,11 +20,10 @@ const Sale = () => {
     const [addedProduct, setAddedProduct] = useState([]);
     const [selectedCustomer, setSelectedCustomer] = useState({});
     const [discount, setDiscount] = useState(0);
-    const [showDialog, setShowDialog] = useState(false);
     const [loadingState, setLoadingState] = useState(false);
     const [showSkeleton, setShowSkeleton] = useState(false);
 
-    const { showAlert } = useAlert();
+    const { openDialog } = useDialog();
     const { start, stop } = useApiLoader();
     const router = useRouter();
 
@@ -63,7 +61,7 @@ const Sale = () => {
         } catch (err) {
             setShowSkeleton(false);
             stop();
-            showAlert(err.message, 'error');
+            console.log(err.message);
         }
     };
 
@@ -130,15 +128,28 @@ const Sale = () => {
     };
 
     const confirmSaleHandler = async () => {
-        setShowDialog(true);
-    };
-
-    const handleOk = async () => {
         try {
+            if (selectedCustomer?.id == null || selectedCustomer?.id == undefined || selectedCustomer?.id == '') {
+                await openDialog('Please select a customer', { type: 'error' });
+                setLoadingState(false);
+                return;
+            }
+            if (addedProduct?.length == 0) {
+                await openDialog('Please add a product', { type: 'error' });
+                setLoadingState(false);
+                return;
+            }
+
+            //check if any product is out of stock
+            const outOfStock = addedProduct?.filter((item) => item.stock < item.qty);
+            if (outOfStock?.length > 0) {
+                await openDialog('Some products are out of stock', { type: 'error' });
+                setLoadingState(false);
+                return;
+            }
+
             setLoadingState(true);
-            if (!selectedCustomer?.id) return showAlert('Please select a customer', 'error');
             start();
-            setShowDialog(false);
             const data = {
                 customer_id: selectedCustomer.id,
                 is_gross_total: discount > 0 ? true : false,
@@ -153,27 +164,29 @@ const Sale = () => {
                         sale_price: prod.price || 0,
                         discount: prod.discount,
                         item_total: prod.item_total,
-                        vat_pct: prod.vat_pct
+                        vat_pct: prod.vat_pct,
+                        product_name: prod.name
                     };
                 })
             };
-
+            await openDialog('You want to confirm sale ?', { type: 'confirm' });
             const res = await confirmSaleAction(data);
             if (res.success) {
+                await openDialog(res.message, { type: 'success' });
                 router.push('/dashboard/invoice');
                 setAddedProduct([]);
                 stop();
-                showAlert(res.message, 'success');
+            } else {
+                await openDialog(res.message, { type: 'error' });
+                stop();
+                setAddedProduct([]);
             }
             setLoadingState(false);
         } catch (err) {
             stop();
-            showAlert(err.message, 'error');
+            setLoadingState(false);
+            console.log(err.message);
         }
-    };
-
-    const handleCancel = () => {
-        setShowDialog(false);
     };
 
     const removeProduct = (data) => {
@@ -296,7 +309,7 @@ const Sale = () => {
                                 <button
                                     disabled={loadingState}
                                     onClick={confirmSaleHandler}
-                                    className="w-full items-center justify-center py-2 mt-2 bg-gradient-to-r from-pink-500 to-purple-600 text-white font-semibold rounded-lg shadow hover:scale-105 transition-transform">
+                                    className="flex w-full items-center justify-center py-2 mt-2 bg-gradient-to-r from-pink-500 to-purple-600 text-white font-semibold rounded-lg shadow hover:scale-105 transition-transform">
                                     Confirm {loadingState && <Loader />}
                                 </button>
                             </div>
@@ -339,7 +352,7 @@ const Sale = () => {
                                                 <td className="px-2 py-2">{prodIndx + 1}</td>
                                                 <td className="px-2 py-2 text-start">{prod.name || ''}</td>
                                                 <td className="px-2 py-2 text-end">{prod.price || 0}</td>
-                                                <td className="px-2 py-2 text-end">{prod.qty || 0}</td>
+                                                <td className="px-2 py-2 text-end">{prod.stock || 0}</td>
                                                 <td className="px-2 py-2 text-end">
                                                     <button
                                                         onClick={() => addProductHandler(prod)}
@@ -358,14 +371,6 @@ const Sale = () => {
                             </div>
                         </div>
                     </div>
-
-                    {showDialog && (
-                        <ConfirmDialog
-                            message="Are you sure you want to continue?"
-                            onOk={handleOk}
-                            onCancel={handleCancel}
-                        />
-                    )}
                 </div>
             )}
 

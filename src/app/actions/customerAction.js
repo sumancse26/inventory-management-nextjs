@@ -15,7 +15,7 @@ export const saveCustomerAction = async (data) => {
 
 export const updateCustomerAction = async (data) => {
     const res = await updateCustomer(data);
-    console.log('actions.....   ', res);
+
     return res;
 };
 

@@ -2,23 +2,19 @@ import Loader from '@components/loader';
 import { useEffect, useState } from 'react';
 
 const AddCustomer = ({ onClose, saveCustomer, customer }) => {
-    const [customerInfo, setCustomerInfo] = useState({
-        id: null,
-        name: '',
-        email: '',
-        mobile: ''
-    });
+    const [customerInfo, setCustomerInfo] = useState({});
     const [loadingState, setLoadingState] = useState(false);
 
     useEffect(() => {
         setCustomerInfo(customer);
-    }, [customer]);
+    }, [customer.id]);
 
-    const saveBtnHandler = async () => {
+    const saveBtnHandler = async (e) => {
+        e.preventDefault();
+
         setLoadingState(true);
         await saveCustomer(customerInfo);
         setLoadingState(false);
-        onClose(false);
     };
 
     return (
@@ -55,7 +51,7 @@ const AddCustomer = ({ onClose, saveCustomer, customer }) => {
                         <input
                             type="text"
                             name="name"
-                            value={customerInfo.name}
+                            value={customerInfo.name || ''}
                             required
                             onChange={(e) => setCustomerInfo({ ...customerInfo, name: e.target.value })}
                             placeholder="Enter full name"
@@ -71,7 +67,7 @@ const AddCustomer = ({ onClose, saveCustomer, customer }) => {
                         <input
                             type="email"
                             name="email"
-                            value={customerInfo.email}
+                            value={customerInfo.email || ''}
                             onChange={(e) => setCustomerInfo({ ...customerInfo, email: e.target.value })}
                             placeholder="example@domain.com"
                             className="w-full px-4 py-2 text-sm border rounded-lg border-gray-300 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-gray-800 dark:text-white placeholder-gray-400 dark:placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-purple-500"
@@ -86,7 +82,7 @@ const AddCustomer = ({ onClose, saveCustomer, customer }) => {
                         <input
                             type="tel"
                             name="mobile"
-                            value={customerInfo.mobile}
+                            value={customerInfo.mobile || ''}
                             required
                             onChange={(e) => setCustomerInfo({ ...customerInfo, mobile: e.target.value })}
                             placeholder="01XXXXXXXXX"

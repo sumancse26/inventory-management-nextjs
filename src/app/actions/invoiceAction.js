@@ -1,5 +1,5 @@
 'use server';
-import { getInvoice, getInvoiceInfo, saveInvoice } from '@/services/invoice.js';
+import { deleteInvoice, getInvoice, getInvoiceInfo, saveInvoice } from '@/services/invoice.js';
 
 export const confirmSaleAction = async (data) => {
     const res = await saveInvoice(data);
@@ -15,6 +15,12 @@ export const invoiceListAction = async () => {
 
 export const invoiceInfoAction = async (invId) => {
     const res = await getInvoiceInfo(invId);
+
+    return res;
+};
+
+export const deleteInvoiceAction = async (data) => {
+    const res = await deleteInvoice(data);
 
     return res;
 };

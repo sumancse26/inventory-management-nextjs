@@ -1,7 +1,8 @@
 'use client';
 
-import { invoiceInfoAction, invoiceListAction } from '@/app/actions/invoiceAction';
+import { deleteInvoiceAction, invoiceInfoAction, invoiceListAction } from '@/app/actions/invoiceAction';
 import SkeletonList from '@/components/skeleton';
+import { useDialog } from '@/context/DialogContext';
 import { useApiLoader } from '@/lib/useApiLoader';
 import EmptyState from '@components/emptyState.jsx';
 import Link from 'next/link';
@@ -15,6 +16,7 @@ const InvoiceList = () => {
     const [showSkeleton, setShowSkeleton] = useState(false);
 
     const { start, stop } = useApiLoader();
+    const { openDialog } = useDialog();
 
     useEffect(() => {
         getInvListHandler();
@@ -46,13 +48,32 @@ const InvoiceList = () => {
         }
     };
 
-    const viewInvHandler = (data) => {
-        getInvById(data);
+    const viewInvHandler = async (data) => {
+        await getInvById(data);
         setShowInvDtl(true);
     };
 
     const closeModalHandler = () => {
         setShowInvDtl(false);
+    };
+
+    const cancelInvoice = async (inv) => {
+        try {
+            await openDialog('You want to cancel ?', { type: 'confirm' });
+            start();
+
+            const res = await deleteInvoiceAction({ invoice_id: inv.id });
+            if (res.success) {
+                await openDialog(res.message, { type: 'success' });
+                getInvListHandler();
+            } else {
+                await openDialog(res.message, { type: 'error' });
+            }
+            stop();
+        } catch (err) {
+            stop();
+            console.log(err.message);
+        }
     };
 
     return (
@@ -80,8 +101,8 @@ const InvoiceList = () => {
                                 <th className="px-5 py-3 font-semibold">SL</th>
                                 <th className="px-5 py-3 font-semibold">Inv By</th>
                                 <th className="px-5 py-3 font-semibold text-end">Discount</th>
-                                <th className="px-5 py-3 font-semibold text-end">Vat</th>
-                                <th className="px-5 py-3 font-semibold text-end">Total</th>
+                                <th className="px-5 py-3 font-semibold text-end">Vat Amount</th>
+                                <th className="px-5 py-3 font-semibold text-end">Inv Total</th>
                                 <th className="px-5 py-3 font-semibold">Status</th>
                                 <th className="px-5 py-3 font-semibold text-end">Action</th>
                             </tr>
@@ -100,17 +121,22 @@ const InvoiceList = () => {
                                         {inv.status == 1 ? 'active' : 'cancelled'}
                                     </td>
                                     <td className="px-5 py-3 flex items-end justify-end gap-3 text-end">
-                                        <button
-                                            onClick={() => viewInvHandler(inv)}
-                                            className="material-icons opacity-0 group-hover:opacity-100 bg-purple-600 hover:bg-purple-700 text-white rounded-full w-8 h-8 flex items-center justify-center transition"
-                                            title="View">
-                                            <span className="material-icons text-sm">visibility</span>
-                                        </button>
-                                        <button
-                                            className="material-icons opacity-0 group-hover:opacity-100 bg-red-500 hover:bg-red-600 text-white rounded-full w-8 h-8 flex items-center justify-center transition"
-                                            title="Delete">
-                                            <span className="material-icons text-sm">delete</span>
-                                        </button>
+                                        {inv.status == 1 && (
+                                            <>
+                                                <button
+                                                    onClick={() => viewInvHandler(inv)}
+                                                    className="material-icons opacity-0 group-hover:opacity-100 bg-purple-600 hover:bg-purple-700 text-white rounded-full w-8 h-8 flex items-center justify-center transition"
+                                                    title="View">
+                                                    <span className="material-icons text-sm">visibility</span>
+                                                </button>
+                                                <button
+                                                    onClick={() => cancelInvoice(inv)}
+                                                    className="material-icons opacity-0 group-hover:opacity-100 bg-red-500 hover:bg-red-600 text-white rounded-full w-8 h-8 flex items-center justify-center transition"
+                                                    title="Delete">
+                                                    <span className="material-icons text-sm">delete</span>
+                                                </button>
+                                            </>
+                                        )}
                                     </td>
                                 </tr>
                             ))}

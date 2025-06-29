@@ -12,7 +12,7 @@ const Nav = () => {
         <div>
             <Header logoHandler={logoHandlerBtn} />
             <div
-                className={`lg:fixed hidden  lg:block xl:block 2xl:block left-0 top-0 h-full w-64 bg-white shadow-lg dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 transition-all duration-300 ease-in-out ${
+                className={`nav-sidebar-wrapper fixed border-r border-gray-300 shadow-lg w-64 h-full top-[67px] left-0 bg-white transition-all duration-600 ease-in-out z-50 ${
                     sidebarOpen ? 'nav-slider' : ''
                 }`}>
                 {/* Navigation Items */}
@@ -292,9 +292,14 @@ const Nav = () => {
                     .dark .custom-scrollbar::-webkit-scrollbar-thumb:hover {
                         background: #6b7280;
                     }
-                    .nav-slider {
-                        position: fixed;
-                        display: block;
+
+                    @media (max-width: 1025px) {
+                        .nav-sidebar-wrapper {
+                            left: -300px;
+                        }
+                        .nav-slider {
+                            left: 0;
+                        }
                     }
                 `}</style>
             </div>
@@ -303,3 +308,5 @@ const Nav = () => {
 };
 
 export default Nav;
+
+// lg:fixed hidden md:left-[-100%]  lg:block xl:block 2xl:block left-0 top-0 h-full w-64 bg-white shadow-lg dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 transition-all duration-300 ease-in-out

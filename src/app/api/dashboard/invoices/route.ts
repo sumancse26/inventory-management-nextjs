@@ -8,6 +8,7 @@ type productType = {
     discount: number;
     item_total: number;
     vat_pct: number;
+    product_name: string;
 };
 
 type userType = {
@@ -145,18 +146,47 @@ export const POST = async (req: NextRequest): Promise<NextResponse> => {
                     product_id: item.product_id,
                     user_id: Number(userId),
                     qty: item.qty?.toString(),
-                    sale_price: item.sale_price?.toString()
+                    sale_price: item.sale_price?.toString(),
+                    product_name: item.product_name
                 };
             });
 
-            const invoiceProducts = await tx.invoice_products.createMany({
-                data: products
+            await tx.invoice_products.createMany({ data: products });
+
+            // Update stock from products table
+            const stockProducts = products.map((p: productType) => p.product_id);
+            const dbProducts = await tx.products.findMany({
+                where: {
+                    id: { in: stockProducts }
+                },
+                select: {
+                    id: true,
+                    stock: true
+                }
             });
 
-            return { invoice, invoiceProducts };
+            const updatedProducts = dbProducts.map((p) => {
+                const product = products.find((ip: productType) => ip.product_id == p.id);
+                return {
+                    id: p.id,
+                    stock: Number(p.stock) - Number(product?.qty || 0)
+                };
+            });
+
+            // ✅ Apply the stock updates
+            await Promise.all(
+                updatedProducts.map((p) =>
+                    tx.products.update({
+                        where: { id: p.id },
+                        data: { stock: Number(p.stock) }
+                    })
+                )
+            );
+
+            return { invoice };
         });
 
-        return NextResponse.json({ message: 'Invoice saved successfully', success: true }, { status: 200 });
+        return NextResponse.json({ message: 'Order placed successfully', success: true }, { status: 200 });
     } catch (err) {
         console.log(err);
         return NextResponse.json(
@@ -179,28 +209,37 @@ export const DELETE = async (req: NextRequest): Promise<NextResponse> => {
         const body = await req.json();
         const invId = Number(body.invoice_id);
 
-        await prisma.$transaction(async (tx) => {
-            const deletedProducts = await tx.invoice_products.deleteMany({
-                where: {
-                    invoice_id: invId,
-                    user_id: Number(userId)
-                }
-            });
+        if (!invId) {
+            return NextResponse.json({ message: 'Invoice id is required' }, { status: 400 });
+        }
 
-            const deletedInv = await tx.invoices.delete({
-                where: {
-                    id: invId,
-                    user_id: Number(userId)
-                }
-            });
-
-            return {
-                deletedProducts,
-                deletedInv
-            };
+        await prisma.invoices.update({
+            where: { id: invId },
+            data: { status: 0 }
         });
 
-        return NextResponse.json({ message: 'Invoice deleted successfully', success: true }, { status: 200 });
+        // await prisma.$transaction(async (tx) => {
+        //     const deletedProducts = await tx.invoice_products.deleteMany({
+        //         where: {
+        //             invoice_id: invId,
+        //             user_id: Number(userId)
+        //         }
+        //     });
+
+        //     const deletedInv = await tx.invoices.delete({
+        //         where: {
+        //             id: invId,
+        //             user_id: Number(userId)
+        //         }
+        //     });
+
+        //     return {
+        //         deletedProducts,
+        //         deletedInv
+        //     };
+        // });
+
+        return NextResponse.json({ message: 'Order canceled successfully', success: true }, { status: 200 });
     } catch (err) {
         console.log(err);
         return NextResponse.json(

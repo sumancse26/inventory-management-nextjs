@@ -2,13 +2,11 @@
 import { categoryListAction } from '@/app/actions/categoryAction';
 import { deleteProductAction, productListAction } from '@/app/actions/productAction';
 import SkeletonList from '@/components/skeleton';
-import { useAlert } from '@/context/AlertContext';
+import { useDialog } from '@/context/DialogContext';
 import { useApiLoader } from '@/lib/useApiLoader';
 import { addProduct, updateProduct } from '@/services/product';
-import ConfirmDialog from '@components/confirmDialog';
 import EmptyState from '@components/emptyState.jsx';
 import Image from 'next/image';
-import { NextResponse } from 'next/server';
 import { useEffect, useState } from 'react';
 import AddProduct from './addProduct';
 
@@ -22,7 +20,7 @@ const ProductList = () => {
     const [showSkeleton, setShowSkeleton] = useState(false);
 
     const { start, stop } = useApiLoader();
-    const { showAlert } = useAlert();
+    const { openDialog } = useDialog();
 
     useEffect(() => {
         fetchProductList();
@@ -35,9 +33,10 @@ const ProductList = () => {
             const res = await categoryListAction();
             setCategoryList(res?.data || []);
         } catch (err) {
-            showAlert(err.message, 'error');
+            console.log(err.message);
         }
     };
+
     const fetchProductList = async () => {
         try {
             setShowSkeleton(true);
@@ -50,13 +49,14 @@ const ProductList = () => {
         } catch (err) {
             stop();
             setShowSkeleton(false);
-            showAlert(err.message, 'error');
+            console.log(err.message);
         }
     };
 
     const handleSubmit = async (value) => {
         try {
             let res = '';
+            await openDialog('You want to save ?', { type: 'confirm' });
             start();
             if (selectedProduct.id) {
                 res = await updateProduct(value);
@@ -65,19 +65,16 @@ const ProductList = () => {
             }
             stop();
             if (res.success) {
-                showAlert(res.message, 'success');
+                await openDialog(res.message, { type: 'success' });
                 setShowModal(false);
                 fetchProductList();
+            } else {
+                await openDialog(res.message, { type: 'error' });
             }
             return res;
         } catch (err) {
             stop();
-            showAlert('Failed to add product', 'error');
-            return NextResponse.json({
-                success: false,
-                message: 'Failed to add product',
-                error: err.message
-            });
+            console.log(err.message);
         }
     };
 
@@ -92,31 +89,24 @@ const ProductList = () => {
     };
 
     const deleteProductHandler = async (id) => {
-        setProductToDelete(id);
-        setShowDialog(true);
-    };
-
-    const handleOk = async () => {
         try {
+            await openDialog('You want to delete ?', { type: 'confirm' });
             start();
             const res = await deleteProductAction(productToDelete);
             setShowDialog(false);
             if (res.success) {
-                const filteredList = productList.filter((p) => p.id !== productToDelete);
+                const filteredList = productList.filter((p) => p.id != id);
                 setProductList(filteredList);
-                stop();
-                showAlert(res.message, 'success');
+                await openDialog(res.message, { type: 'success' });
+            } else {
+                await openDialog(res.message, { type: 'error' });
             }
+            stop();
         } catch (err) {
             setShowDialog(false);
             console.log(err.message);
             stop();
-            showAlert(err.message, 'error');
         }
-    };
-
-    const handleCancel = () => {
-        setShowDialog(false);
     };
 
     return (
@@ -293,10 +283,6 @@ const ProductList = () => {
                     handleSubmit={handleSubmit}
                     selectedProduct={selectedProduct}
                 />
-            )}
-
-            {showDialog && (
-                <ConfirmDialog message="Are you sure you want to continue?" onOk={handleOk} onCancel={handleCancel} />
             )}
         </>
     );

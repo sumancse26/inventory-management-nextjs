@@ -7,9 +7,8 @@ import {
     updateCategoryAction
 } from '@/app/actions/categoryAction';
 import SkeletonList from '@/components/skeleton';
-import { useAlert } from '@/context/AlertContext';
+import { useDialog } from '@/context/DialogContext';
 import { useApiLoader } from '@/lib/useApiLoader';
-import ConfirmDialog from '@components/confirmDialog';
 import EmptyState from '@components/emptyState.jsx';
 import moment from 'moment';
 import { useEffect, useState } from 'react';
@@ -19,12 +18,10 @@ const CategoryList = () => {
     const [openModal, setOpenModal] = useState(false);
     const [categories, setCategories] = useState([]);
     const [selectedCategory, setSelectedCategory] = useState({});
-    const [showDialog, setShowDialog] = useState(false);
-    const [categoryToDelete, setCategoryToDelete] = useState({});
     const [showSkeleton, setShowSkeleton] = useState(false);
 
     const { start, stop } = useApiLoader();
-    const { showAlert } = useAlert();
+    const { openDialog } = useDialog();
 
     useEffect(() => {
         fetchCategoryList();
@@ -49,28 +46,34 @@ const CategoryList = () => {
         } catch (err) {
             setShowSkeleton(false);
             stop();
-            showAlert(err.message, 'error');
         }
     };
 
     const saveCategoryHandler = async (category) => {
         try {
+            await openDialog('You want to save ?', { type: 'confirm' });
             start();
+            let res = {};
             if (selectedCategory?.id) {
-                const res = await updateCategoryAction({
+                res = await updateCategoryAction({
                     name: category,
                     id: selectedCategory?.id
                 });
-                showAlert(res.message, 'success');
             } else {
-                const res = await addCategoryAction({ name: category });
-                showAlert(res.message, 'success');
+                res = await addCategoryAction({ name: category });
             }
+            if (res.success) {
+                await openDialog(res.message, { type: 'success' });
+            } else {
+                await openDialog(res.message, { type: 'error' });
+            }
+
             setOpenModal(false);
             fetchCategoryList();
             stop();
+            return res;
         } catch (err) {
-            showAlert(err.message, 'error');
+            console.log(err.message);
             stop();
         }
     };
@@ -81,33 +84,22 @@ const CategoryList = () => {
     };
 
     const deleteCategoryHandler = async (cat) => {
-        setShowDialog(true);
-        setCategoryToDelete(cat);
-    };
-
-    const handleOk = async () => {
+        await openDialog('You want to delete ?', { type: 'confirm' });
         try {
             start();
-            setShowDialog(false);
-            const res = await deleteCategoryAction(categoryToDelete?.id);
+            const res = await deleteCategoryAction(cat?.id);
 
             if (res.success) {
-                showAlert(res.message, 'success');
-                const filteredList = categories.filter((c) => c.id !== categoryToDelete?.id);
+                await openDialog(res.message, { type: 'success' });
+                const filteredList = categories.filter((c) => c.id !== cat?.id);
                 setCategories(filteredList);
             }
-            setShowDialog(false);
             stop();
         } catch (err) {
-            showAlert(res.message, 'error');
+            await openDialog(err.message, { type: 'error' });
             stop();
-            setShowDialog(false);
-            console.error('Error deleting category:', err);
+            console.log('Error deleting category:', err);
         }
-    };
-
-    const handleCancel = () => {
-        setShowDialog(false);
     };
 
     const openModalHandler = () => {
@@ -138,7 +130,7 @@ const CategoryList = () => {
 
                                 <button
                                     onClick={openModalHandler}
-                                    className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium bg-gradient-to-r from-blue-500 to-purple-600 text-white font-semibold rounded hover:from-blue-600 hover:to-purple-700 focus:outline-none">
+                                    className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded hover:from-blue-600 hover:to-purple-700 focus:outline-none">
                                     <span className="material-icons text-base">add</span>
                                     Add Category
                                 </button>
@@ -231,14 +223,6 @@ const CategoryList = () => {
                         category={selectedCategory}
                         saveCategory={saveCategoryHandler}
                         hideModal={hideModalHandler}
-                    />
-                )}
-
-                {showDialog && (
-                    <ConfirmDialog
-                        message="Are you sure you want to continue?"
-                        onOk={handleOk}
-                        onCancel={handleCancel}
                     />
                 )}
             </div>

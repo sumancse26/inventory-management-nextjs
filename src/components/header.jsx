@@ -78,7 +78,7 @@ const Header = ({ logoHandler }) => {
                                 style={{ width: '80px', height: 'auto' }}
                             />
                         </Link>
-                        <button className="lg:hidden xl:hidden 2xl:hidden flex items-center justify-center mt-2">
+                        <button className="lg:hidden xl:hidden 2xl:hidden flex items-center justify-center mt-2 cursor-pointer">
                             <span className="material-icons" onClick={() => logoBtnHandler(true)}>
                                 menu
                             </span>

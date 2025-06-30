@@ -1,0 +1,2 @@
+-- AlterTable
+ALTER TABLE "invoices" ADD COLUMN     "inv_no" VARCHAR(20) NOT NULL DEFAULT '00000000';

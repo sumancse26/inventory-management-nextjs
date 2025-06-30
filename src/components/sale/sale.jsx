@@ -89,7 +89,8 @@ const Sale = () => {
     };
 
     const totalPayable = () => {
-        return subTotal() - discountTotal() + totalVat();
+        return subTotal() - discountTotal();
+        // return subTotal() - discountTotal() + totalVat();
     };
 
     const discountTotal = () => {
@@ -101,11 +102,11 @@ const Sale = () => {
         }, 0);
     };
 
-    const totalVat = () => {
-        return addedProduct.reduce((total, item) => {
-            return total + ((Number(item.item_total) * Number(item.vat_pct)) / 100 || 0);
-        }, 0);
-    };
+    // const totalVat = () => {
+    //     return addedProduct.reduce((total, item) => {
+    //         return total + ((Number(item.item_total) * Number(item.vat_pct)) / 100 || 0);
+    //     }, 0);
+    // };
 
     const itemTotalHandler = (e, item) => {
         const { value } = e.target;
@@ -114,7 +115,7 @@ const Sale = () => {
                 return {
                     ...prod,
                     qty: Number(value),
-                    item_total: Number(value) * Number(prod.price)
+                    item_total: Number(value) * Number(prod.mrp)
                 };
             }
             return prod;
@@ -155,17 +156,19 @@ const Sale = () => {
                 is_gross_total: discount > 0 ? true : false,
                 total: subTotal(),
                 discount: (discount > 0 ? discount : discountTotal()) || 0,
-                vat_pct: totalVat() || 0,
+                //vat_pct: totalVat() || 0,
                 payable: totalPayable() || 0,
                 products: await addedProduct?.map((prod) => {
                     return {
                         product_id: prod.id,
                         qty: prod.qty,
-                        sale_price: prod.price || 0,
+                        sale_price: prod.mrp || 0,
+                        unit_price: prod.unit_price,
                         discount: prod.discount,
                         item_total: prod.item_total,
                         vat_pct: prod.vat_pct,
-                        product_name: prod.name
+                        product_name: prod.name,
+                        product_code: prod.prod_code
                     };
                 })
             };
@@ -241,7 +244,7 @@ const Sale = () => {
                                             <th className="w-1/12 px-2 py-1 text-end">Stock</th>
                                             <th className="w-2/12 px-2 py-1 text-end">Price</th>
                                             <th className="w-1/12 px-2 py-1">Qty</th>
-                                            <th className="w-1/12 px-2 py-1 text-center">VAT</th>
+                                            {/* <th className="w-1/12 px-2 py-1 text-center">VAT</th> */}
                                             <th className="w-1/12 px-2 py-1 text-center">Discount</th>
                                             <th className="w-3/12 px-2 py-1 text-right">Total</th>
                                             <th className="w-1/12"></th>
@@ -255,7 +258,7 @@ const Sale = () => {
                                                 <td className="px-2 py-2">{addedIndx + 1}</td>
                                                 <td className="px-2 py-2">{addedProd.name || ''}</td>
                                                 <td className="px-2 py-2 text-end">{addedProd.stock || 0}</td>
-                                                <td className="px-2 py-2 text-end">{addedProd.price || 0}</td>
+                                                <td className="px-2 py-2 text-end">{addedProd.mrp || 0}</td>
                                                 <td className="px-2 py-2">
                                                     <input
                                                         onChange={(e) => itemTotalHandler(e, addedProd)}
@@ -265,7 +268,7 @@ const Sale = () => {
                                                         placeholder="0"
                                                     />
                                                 </td>
-                                                <td className="px-2 py-2 text-center">{addedProd.vat_pct}</td>
+                                                {/* <td className="px-2 py-2 text-center">{addedProd.vat_pct}</td> */}
                                                 <td className="px-2 py-2 text-center">{addedProd.discount}</td>
 
                                                 <td className="px-2 py-2 text-right">{addedProd.item_total || 0}</td>
@@ -291,10 +294,10 @@ const Sale = () => {
                                     Payable:
                                     <span className="text-indigo-700">{totalPayable()} TK.</span>
                                 </p>
-                                <p>
+                                {/* <p>
                                     VAT:
                                     <span className="text-indigo-700">{totalVat()} TK.</span>
-                                </p>
+                                </p> */}
                                 <div className="flex items-center gap-2">
                                     <label htmlFor="discount" className="w-24">
                                         Discount:
@@ -351,7 +354,7 @@ const Sale = () => {
                                             <tr className="border-b border-gray-300 hover:bg-gray-50" key={prodIndx}>
                                                 <td className="px-2 py-2">{prodIndx + 1}</td>
                                                 <td className="px-2 py-2 text-start">{prod.name || ''}</td>
-                                                <td className="px-2 py-2 text-end">{prod.price || 0}</td>
+                                                <td className="px-2 py-2 text-end">{prod.mrp || 0}</td>
                                                 <td className="px-2 py-2 text-end">{prod.stock || 0}</td>
                                                 <td className="px-2 py-2 text-end">
                                                     <button

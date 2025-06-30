@@ -35,7 +35,7 @@ const SignUp = () => {
         const result = await registerAction(null, formData);
         setLoadingState(false);
         if (result && result.success) {
-            router.push('/auth/login');
+            router.push('/login');
             showAlert(result.message, 'success');
             setFormData({
                 email: '',

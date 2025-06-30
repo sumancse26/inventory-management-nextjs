@@ -113,7 +113,11 @@ const Header = ({ logoHandler }) => {
                                 onClick={() => setDropdownOpen((prev) => !prev)}
                                 className="flex items-center space-x-2 focus:outline-none">
                                 <div className="relative">
-                                    <img className="h-8 w-8 rounded-full" src={profile.image} alt="User profile" />
+                                    <img
+                                        className="h-8 w-8 rounded-full"
+                                        src={profile.image || null}
+                                        alt="User profile"
+                                    />
                                     <span className="absolute bottom-0 right-0 h-2 w-2 bg-green-500 rounded-full ring-2 ring-white dark:ring-gray-900" />
                                 </div>
                                 <span className="hidden md:inline-block text-sm font-medium text-gray-700 dark:text-gray-200">

@@ -33,3 +33,12 @@ export const deleteInvoice = async (data) => {
 
     return res;
 };
+
+export const updateCollection = async (data) => {
+    const res = await fetchApi(`/api/dashboard/invoices`, {
+        method: 'PUT',
+        body: JSON.stringify(data)
+    });
+
+    return res;
+};

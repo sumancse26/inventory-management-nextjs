@@ -15,8 +15,6 @@ const ProductList = () => {
     const [productList, setProductList] = useState([]);
     const [categoryList, setCategoryList] = useState([]);
     const [selectedProduct, setSelectedProduct] = useState({});
-    const [showDialog, setShowDialog] = useState(false);
-    const [productToDelete, setProductToDelete] = useState({});
     const [showSkeleton, setShowSkeleton] = useState(false);
 
     const { start, stop } = useApiLoader();
@@ -92,8 +90,7 @@ const ProductList = () => {
         try {
             await openDialog('You want to delete ?', { type: 'confirm' });
             start();
-            const res = await deleteProductAction(productToDelete);
-            setShowDialog(false);
+            const res = await deleteProductAction(id);
             if (res.success) {
                 const filteredList = productList.filter((p) => p.id != id);
                 setProductList(filteredList);
@@ -103,7 +100,6 @@ const ProductList = () => {
             }
             stop();
         } catch (err) {
-            setShowDialog(false);
             console.log(err.message);
             stop();
         }
@@ -188,10 +184,10 @@ const ProductList = () => {
                                                         )}
                                                     </td>
                                                     <td className="px-1 py-2 text-gray-600 dark:text-neutral-300  text-start">
-                                                        {product?.name || ''}
+                                                        {product?.prod_code || ''} - {product?.name || ''}
                                                     </td>
                                                     <td className="px-1 py-2 text-gray-600 dark:text-neutral-300 text-end">
-                                                        {product.price || 0}
+                                                        {product.unit_price || 0}
                                                     </td>
                                                     <td className="px-1 py-2 text-gray-600 dark:text-neutral-300 text-end">
                                                         {product.stock || 0} {product.uom_name || ''}

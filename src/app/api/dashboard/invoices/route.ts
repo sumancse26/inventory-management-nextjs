@@ -1,4 +1,5 @@
 import prisma from '@/config/prisma';
+import { generateInvoiceNumber } from '@/utils';
 import { NextRequest, NextResponse } from 'next/server';
 
 type productType = {
@@ -9,6 +10,9 @@ type productType = {
     item_total: number;
     vat_pct: number;
     product_name: string;
+    payable: string;
+    product_code: string;
+    unit_price: number;
 };
 
 type userType = {
@@ -43,6 +47,9 @@ export const GET = async (req: NextRequest): Promise<NextResponse> => {
                     vat_amount: true,
                     payable: true,
                     status: true,
+                    inv_no: true,
+                    collection_type: true,
+                    collection_amount: true,
                     user: {
                         select: {
                             id: true,
@@ -69,6 +76,9 @@ export const GET = async (req: NextRequest): Promise<NextResponse> => {
                     vat_amount: true,
                     payable: true,
                     status: true,
+                    inv_no: true,
+                    collection_type: true,
+                    collection_amount: true,
                     user: {
                         select: {
                             id: true,
@@ -121,12 +131,14 @@ export const POST = async (req: NextRequest): Promise<NextResponse> => {
 
         const totalVat = () => {
             return body.products.reduce((total: number, item: productType) => {
-                return total + ((Number(item.item_total) * Number(item.vat_pct)) / 100 || 0);
+                return total + ((Number(item.unit_price) * Number(item.vat_pct) * Number(item.qty)) / 100 || 0);
             }, 0);
         };
         const totalVatAmount = totalVat();
 
-        const totalPayable = (Number(total) + Number(totalVatAmount) - Number(totalDiscount))?.toString();
+        const totalPayable = (Number(total) - Number(totalDiscount))?.toString(); //if vat included with product
+        // const totalPayable = (Number(total) + Number(totalVatAmount) - Number(totalDiscount))?.toString();
+        const invoiceNumber = await generateInvoiceNumber();
 
         await prisma.$transaction(async (tx) => {
             const invoice = await tx.invoices.create({
@@ -136,7 +148,8 @@ export const POST = async (req: NextRequest): Promise<NextResponse> => {
                     total: total?.toString(),
                     discount: totalDiscount?.toString(),
                     vat_amount: totalVatAmount,
-                    payable: totalPayable
+                    payable: totalPayable,
+                    inv_no: invoiceNumber
                 }
             });
 
@@ -147,7 +160,8 @@ export const POST = async (req: NextRequest): Promise<NextResponse> => {
                     user_id: Number(userId),
                     qty: item.qty?.toString(),
                     sale_price: item.sale_price?.toString(),
-                    product_name: item.product_name
+                    product_name: item.product_name,
+                    product_code: item.product_code
                 };
             });
 
@@ -240,6 +254,53 @@ export const DELETE = async (req: NextRequest): Promise<NextResponse> => {
         // });
 
         return NextResponse.json({ message: 'Order canceled successfully', success: true }, { status: 200 });
+    } catch (err) {
+        console.log(err);
+        return NextResponse.json(
+            {
+                error: 'Internal server error',
+                success: false,
+                message: 'Internal server error'
+            },
+            { status: 500 }
+        );
+    }
+};
+
+export const PUT = async (req: NextRequest): Promise<NextResponse> => {
+    try {
+        const userId = req.headers.get('user_id');
+
+        if (!userId) {
+            return NextResponse.json({ message: 'Unauthorized user' }, { status: 400 });
+        }
+
+        const body = await req.json();
+
+        const invItem = await prisma.invoices.findUnique({
+            where: {
+                id: Number(body.invoice_id),
+                user_id: Number(userId)
+            }
+        });
+
+        const collectionAmt = Number(invItem?.collection_amount || 0) + Number(body.collection_amount || 0);
+
+        const collectionType = Number(invItem?.payable || 0) <= collectionAmt ? 'full' : 'partial';
+
+        await prisma.invoices.update({
+            where: {
+                id: Number(body.invoice_id),
+                user_id: Number(userId)
+            },
+            data: {
+                status: collectionType == 'full' ? 2 : 1,
+                collection_amount: Number(invItem?.collection_amount || 0) + Number(body.collection_amount),
+                collection_type: collectionType
+            }
+        });
+
+        return NextResponse.json({ message: 'Collection placed successfully', success: true }, { status: 200 });
     } catch (err) {
         console.log(err);
         return NextResponse.json(

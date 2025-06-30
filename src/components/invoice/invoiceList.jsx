@@ -1,12 +1,18 @@
 'use client';
 
-import { deleteInvoiceAction, invoiceInfoAction, invoiceListAction } from '@/app/actions/invoiceAction';
+import {
+    collectionAction,
+    deleteInvoiceAction,
+    invoiceInfoAction,
+    invoiceListAction
+} from '@/app/actions/invoiceAction';
 import SkeletonList from '@/components/skeleton';
 import { useDialog } from '@/context/DialogContext';
 import { useApiLoader } from '@/lib/useApiLoader';
 import EmptyState from '@components/emptyState.jsx';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
+import Collection from './collection';
 import InvoiceDetail from './invoiceDetails';
 
 const InvoiceList = () => {
@@ -14,6 +20,8 @@ const InvoiceList = () => {
     const [showInvDtl, setShowInvDtl] = useState(false);
     const [invInfo, setInvInfo] = useState({});
     const [showSkeleton, setShowSkeleton] = useState(false);
+    const [showCollection, setShowCollection] = useState(false);
+    const [selectedInv, setSelectedInv] = useState({});
 
     const { start, stop } = useApiLoader();
     const { openDialog } = useDialog();
@@ -55,6 +63,40 @@ const InvoiceList = () => {
 
     const closeModalHandler = () => {
         setShowInvDtl(false);
+    };
+
+    const collectionInvoiceHandler = (inv) => {
+        setSelectedInv(inv);
+        setShowCollection(true);
+    };
+
+    const onCloseCollection = () => {
+        setShowCollection(false);
+    };
+
+    const saveCollectionHandler = async (val) => {
+        try {
+            const data = {
+                invoice_id: val.invoice_id,
+                collection_amount: val.collection_amount
+            };
+            await openDialog('You want to save ?', { type: 'confirm' });
+            start();
+            const res = await collectionAction(data);
+
+            if (res.success) {
+                await openDialog(res.message, { type: 'success' });
+
+                setShowCollection(false);
+                getInvListHandler();
+            } else {
+                await openDialog(res.message, { type: 'error' });
+            }
+            stop();
+        } catch (err) {
+            stop();
+            console.log(err.message);
+        }
     };
 
     const cancelInvoice = async (inv) => {
@@ -99,10 +141,12 @@ const InvoiceList = () => {
                         <thead className="bg-gray-100 text-gray-700 uppercase text-xs">
                             <tr>
                                 <th className="px-5 py-3 font-semibold">SL</th>
+                                <th className="px-5 py-3 font-semibold">Inv No</th>
                                 <th className="px-5 py-3 font-semibold">Inv By</th>
                                 <th className="px-5 py-3 font-semibold text-end">Discount</th>
                                 <th className="px-5 py-3 font-semibold text-end">Vat Amount</th>
                                 <th className="px-5 py-3 font-semibold text-end">Inv Total</th>
+                                <th className="px-5 py-3 font-semibold text-end">Collection</th>
                                 <th className="px-5 py-3 font-semibold">Status</th>
                                 <th className="px-5 py-3 font-semibold text-end">Action</th>
                             </tr>
@@ -111,31 +155,40 @@ const InvoiceList = () => {
                             {invoiceList?.map((inv, indx) => (
                                 <tr key={indx} className="hover:bg-gray-50 dark:hover:bg-neutral-700 group transition">
                                     <td className="px-5 py-3 text-gray-700">{indx + 1}</td>
+                                    <td className="px-5 py-3 text-gray-700">{inv.inv_no || ''}</td>
                                     <td className="px-5 py-3 text-gray-700">
                                         {inv?.user?.first_name || ''} {inv?.user?.last_name || ''}
                                     </td>
                                     <td className="px-5 py-3 text-gray-700 text-end">{inv?.discount || 0}</td>
                                     <td className="px-5 py-3 text-gray-700 text-end">{inv?.vat_amount || 0}</td>
                                     <td className="px-5 py-3 text-gray-700 text-end">{inv?.payable || 0}</td>
+                                    <td className="px-5 py-3 text-gray-700 text-end">{inv?.collection_amount || 0}</td>
                                     <td className="px-5 py-3 text-gray-700">
-                                        {inv.status == 1 ? 'active' : 'cancelled'}
+                                        {inv.status == 1 ? 'active' : inv.status == 2 ? 'inactive' : 'cancelled'}
                                     </td>
                                     <td className="px-5 py-3 flex items-end justify-end gap-3 text-end">
-                                        {inv.status == 1 && (
-                                            <>
-                                                <button
-                                                    onClick={() => viewInvHandler(inv)}
-                                                    className="material-icons opacity-0 group-hover:opacity-100 bg-purple-600 hover:bg-purple-700 text-white rounded-full w-8 h-8 flex items-center justify-center transition"
-                                                    title="View">
-                                                    <span className="material-icons text-sm">visibility</span>
-                                                </button>
-                                                <button
-                                                    onClick={() => cancelInvoice(inv)}
-                                                    className="material-icons opacity-0 group-hover:opacity-100 bg-red-500 hover:bg-red-600 text-white rounded-full w-8 h-8 flex items-center justify-center transition"
-                                                    title="Delete">
-                                                    <span className="material-icons text-sm">delete</span>
-                                                </button>
-                                            </>
+                                        {inv.collection_type != 'full' && (
+                                            <button
+                                                onClick={() => collectionInvoiceHandler(inv)}
+                                                className="material-icons opacity-0 group-hover:opacity-100 bg-indigo-600 hover:bg-indigo-700 text-white rounded-full w-8 h-8 flex items-center justify-center transition"
+                                                title="collection">
+                                                <span className="material-symbols-outlined">money</span>
+                                            </button>
+                                        )}
+
+                                        <button
+                                            onClick={() => viewInvHandler(inv)}
+                                            className="material-icons opacity-0 group-hover:opacity-100 bg-purple-600 hover:bg-purple-700 text-white rounded-full w-8 h-8 flex items-center justify-center transition"
+                                            title="View">
+                                            <span className="material-icons text-sm">visibility</span>
+                                        </button>
+                                        {inv.collection_amount == 0 && (
+                                            <button
+                                                onClick={() => cancelInvoice(inv)}
+                                                className="material-icons opacity-0 group-hover:opacity-100 bg-red-500 hover:bg-red-600 text-white rounded-full w-8 h-8 flex items-center justify-center transition"
+                                                title="Delete">
+                                                <span className="material-icons text-sm">delete</span>
+                                            </button>
                                         )}
                                     </td>
                                 </tr>
@@ -171,6 +224,13 @@ const InvoiceList = () => {
             </div>
 
             {showInvDtl && <InvoiceDetail closeModalHandler={closeModalHandler} invInfo={invInfo} />}
+            {showCollection && (
+                <Collection
+                    onClose={onCloseCollection}
+                    selectedInv={selectedInv}
+                    saveCollection={saveCollectionHandler}
+                />
+            )}
         </div>
     );
 };

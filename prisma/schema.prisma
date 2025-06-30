@@ -52,18 +52,20 @@ model categories {
   users      users      @relation(fields: [user_id], references: [id], onDelete: Restrict)
 }
 
-
+//tp, mrp
 model products {
   id               Int               @id @default(autoincrement())
   user_id          Int
   category_id      Int
   name             String            @db.VarChar(100)
-  price            String            @db.VarChar(50)
+  prod_code        String            @default("0000") @db.VarChar(50)
+  trade_price      Int               @default(0)
   stock            Int               @default(0)
-  unit_price       String            @default("0") @db.VarChar(50)
+  unit_price       Int               @default(0)
+  mrp              Int               @default(0)
   vat_pct          Int               @default(0)
   uom              Int               @default(1)
-  uom_name         String            @default("PC")
+  uom_name         String            @default("Pcs")
   discount         Int               @default(0)
   img_url          String?           @default("") @db.VarChar(100)
   created_at       DateTime          @default(now())
@@ -74,24 +76,31 @@ model products {
   invoice_products invoice_products[]
 }
 
-
-
+ 
+enum collectionType {
+  pending
+  full
+  partial
+}
 model invoices {
-  id               Int               @id @default(autoincrement())
-  total            String            @db.VarChar(50)
-  discount         String            @db.VarChar(50)
-  vat_pct          Int               @default(0)
-  vat_amount       Int               @default(0)
-  payable          String            @db.VarChar(50)
-  user_id          Int
-  customer_id      Int
-  status           Int               @default(1)
-  created_at       DateTime          @default(now())
-  updated_at       DateTime          @updatedAt
+  id                      Int               @id @default(autoincrement())
+  inv_no                  String            @db.VarChar(20) @default("00000000")
+  total                   String            @db.VarChar(50)
+  discount                String            @db.VarChar(50)
+  vat_pct                 Int               @default(0)
+  vat_amount              Int               @default(0)
+  payable                 String            @db.VarChar(50)
+  user_id                 Int
+  customer_id             Int
+  status                  Int               @default(1)
+  collection_type         collectionType    @default(pending)
+  collection_amount       Int               @default(0)
+  created_at              DateTime          @default(now())
+  updated_at              DateTime          @updatedAt
 
-  user             users             @relation(fields: [user_id], references: [id], onDelete: Restrict)
-  customer         customers         @relation(fields: [customer_id], references: [id], onDelete: Restrict)
-  invoice_products invoice_products[]
+  user                    users             @relation(fields: [user_id], references: [id], onDelete: Restrict)
+  customer                customers         @relation(fields: [customer_id], references: [id], onDelete: Restrict)
+  invoice_products        invoice_products[]
 }
 
 
@@ -101,6 +110,7 @@ model invoice_products {
   product_id   Int?      
   user_id      Int
   product_name String    @default("") @db.VarChar(100)
+  product_code String    @default("000") @db.VarChar(50)
   qty          String    @db.VarChar(50)
   sale_price   String    @db.VarChar(50)
   created_at   DateTime  @default(now())

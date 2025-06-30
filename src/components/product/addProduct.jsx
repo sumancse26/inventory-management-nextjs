@@ -8,8 +8,9 @@ import { useEffect, useState } from 'react';
 const AddProduct = ({ isOpen, onClose, categoryList, handleSubmit, selectedProduct }) => {
     const [productInfo, setProductInfo] = useState({
         name: '',
+        prod_code: '',
         price: '',
-        unit_price: '',
+        mrp: '',
         image: '',
         stock: '',
         vat_pct: '',
@@ -39,6 +40,7 @@ const AddProduct = ({ isOpen, onClose, categoryList, handleSubmit, selectedProdu
         }
     ]);
     const [loadingState, setLoadingState] = useState(false);
+    const [totalPriceWithVat, setPriceWithVat] = useState(0);
 
     const { showAlert } = useAlert();
 
@@ -46,8 +48,9 @@ const AddProduct = ({ isOpen, onClose, categoryList, handleSubmit, selectedProdu
         if (selectedProduct && Object.keys(selectedProduct).length > 0) {
             setProductInfo({
                 name: selectedProduct.name || '',
-                price: selectedProduct.price || 0,
-                unit_price: selectedProduct.unit_price || '',
+                prod_code: selectedProduct.prod_code || '',
+                price: selectedProduct.unit_price || 0,
+                mrp: selectedProduct.mrp || 0,
                 image: selectedProduct.image || '',
                 category_id: selectedProduct.category_id || '',
                 stock: selectedProduct.stock || 0,
@@ -65,7 +68,8 @@ const AddProduct = ({ isOpen, onClose, categoryList, handleSubmit, selectedProdu
             setProductInfo({
                 name: '',
                 price: '',
-                unit_price: '',
+                prod_code: '',
+                mrp: '',
                 image: '',
                 stock: '',
                 vat_pct: '',
@@ -79,6 +83,13 @@ const AddProduct = ({ isOpen, onClose, categoryList, handleSubmit, selectedProdu
         }
     }, [selectedProduct]);
 
+    useEffect(() => {
+        if (productInfo.price && productInfo.vat_pct) {
+            priceWithVat();
+        }
+        return () => {};
+    }, [productInfo.price, productInfo.vat_pct]);
+
     const handleImageChange = (e) => {
         const file = e.target.files?.[0];
         if (file) {
@@ -89,6 +100,10 @@ const AddProduct = ({ isOpen, onClose, categoryList, handleSubmit, selectedProdu
 
     const handleInputChange = (e) => {
         const { name, value } = e.target;
+        if (name == 'vat_pct' && Number(value) > 100) {
+            showAlert('VAT percentage cannot be greater than 100', 'error');
+            return;
+        }
         setProductInfo((prev) => ({ ...prev, [name]: value }));
     };
 
@@ -109,8 +124,9 @@ const AddProduct = ({ isOpen, onClose, categoryList, handleSubmit, selectedProdu
         const data = new FormData();
         data.append('id', selectedProduct.id);
         data.append('name', productInfo.name);
+        data.append('prod_code', productInfo.prod_code);
         data.append('price', productInfo.price);
-        data.append('unit_price', productInfo.unit_price);
+        data.append('mrp', productInfo.mrp);
         data.append('category_id', category);
         data.append('stock', productInfo.stock);
         data.append('vat_pct', productInfo.vat_pct);
@@ -136,7 +152,8 @@ const AddProduct = ({ isOpen, onClose, categoryList, handleSubmit, selectedProdu
             setProductInfo({
                 name: '',
                 price: '',
-                unit_price: '',
+                prod_code: '',
+                mrp: '',
                 image: '',
                 stock: '',
                 vat_pct: '',
@@ -154,6 +171,12 @@ const AddProduct = ({ isOpen, onClose, categoryList, handleSubmit, selectedProdu
         setCategory(value);
     };
 
+    const priceWithVat = () => {
+        const total =
+            Number(productInfo.price) + (Number(productInfo.price || 0) * Number(productInfo.vat_pct || 0)) / 100;
+        setPriceWithVat(total);
+    };
+
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center px-4">
             {/* Overlay */}
@@ -166,56 +189,97 @@ const AddProduct = ({ isOpen, onClose, categoryList, handleSubmit, selectedProdu
                 </h2>
 
                 <form className="space-y-6" onSubmit={submitForm}>
-                    <div className="h-96 overflow-y-auto">
-                        {/* Category */}
-                        <div className="mb-4">
-                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                                Category <span className="text-red-500">*</span>
-                            </label>
-                            <select
-                                name="category"
-                                className="w-full px-4 py-2 outline-none border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 dark:bg-neutral-700 dark:text-white"
-                                onChange={handleCategoryChange}
-                                required
-                                value={category}>
-                                <option value="" disabled>
-                                    Select Category
-                                </option>
-                                {categoryList.map((category) => (
-                                    <option key={category.id} value={category.id}>
-                                        {category.name}
-                                    </option>
-                                ))}
-                            </select>
-                        </div>
-
-                        {/* Name */}
-                        <div className="mb-4">
-                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                                Product Name <span className="text-red-500">*</span>
-                            </label>
-                            <input
-                                type="text"
-                                name="name"
-                                value={productInfo.name}
-                                onChange={(e) => handleInputChange(e)}
-                                required
-                                placeholder="Enter product name"
-                                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 outline-none dark:bg-neutral-700 dark:text-white"
-                            />
-                        </div>
-
+                    <div className="h-96 overflow-y-auto px-2">
                         {/* Grid Layout for Price, Stock, UOM, VAT, Discount */}
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            {/* Category */}
+                            <div className="mb-4">
+                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                                    Category <span className="text-red-500">*</span>
+                                </label>
+                                <select
+                                    name="category"
+                                    className="w-full px-4 py-2 outline-none border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 dark:bg-neutral-700 dark:text-white"
+                                    onChange={handleCategoryChange}
+                                    required
+                                    value={category}>
+                                    <option value="" disabled>
+                                        Select Category
+                                    </option>
+                                    {categoryList.map((category) => (
+                                        <option key={category.id} value={category.id}>
+                                            {category.name}
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+
+                            {/* Name */}
+                            <div className="mb-4">
+                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                                    Product Code
+                                </label>
+                                <input
+                                    type="text"
+                                    name="prod_code"
+                                    value={productInfo.prod_code || ''}
+                                    onChange={(e) => handleInputChange(e)}
+                                    placeholder="Enter product name"
+                                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 outline-none dark:bg-neutral-700 dark:text-white"
+                                />
+                            </div>
+                            <div className="mb-4">
+                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                                    Product Name <span className="text-red-500">*</span>
+                                </label>
+                                <input
+                                    type="text"
+                                    name="name"
+                                    value={productInfo.name}
+                                    onChange={(e) => handleInputChange(e)}
+                                    required
+                                    placeholder="Enter product name"
+                                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 outline-none dark:bg-neutral-700 dark:text-white"
+                                />
+                            </div>
                             {/* Price */}
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                                    Price <span className="text-red-500">*</span>
+                                    Price <span className="text-red-500"> ({totalPriceWithVat || 0}) *</span>
                                 </label>
                                 <input
                                     type="number"
                                     name="price"
                                     value={productInfo.price}
+                                    onChange={(e) => handleInputChange(e)}
+                                    required
+                                    placeholder="0.00"
+                                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 outline-none dark:bg-neutral-700 dark:text-white"
+                                />
+                            </div>
+                            {/* VAT */}
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                                    VAT (%) <span className="text-red-500">*</span>
+                                </label>
+                                <input
+                                    type="number"
+                                    name="vat_pct"
+                                    value={productInfo.vat_pct}
+                                    onChange={(e) => handleInputChange(e)}
+                                    required
+                                    placeholder="e.g. 5"
+                                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 outline-none dark:bg-neutral-700 dark:text-white"
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                                    MRP <span className="text-red-500">*</span>
+                                </label>
+                                <input
+                                    type="number"
+                                    name="mrp"
+                                    value={productInfo.mrp || 0}
                                     onChange={(e) => handleInputChange(e)}
                                     required
                                     placeholder="0.00"
@@ -260,22 +324,6 @@ const AddProduct = ({ isOpen, onClose, categoryList, handleSubmit, selectedProdu
                                         </option>
                                     ))}
                                 </select>
-                            </div>
-
-                            {/* VAT */}
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                                    VAT (%) <span className="text-red-500">*</span>
-                                </label>
-                                <input
-                                    type="number"
-                                    name="vat_pct"
-                                    value={productInfo.vat_pct}
-                                    onChange={(e) => handleInputChange(e)}
-                                    required
-                                    placeholder="e.g. 5"
-                                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 outline-none dark:bg-neutral-700 dark:text-white"
-                                />
                             </div>
 
                             {/* Discount */}

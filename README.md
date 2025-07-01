@@ -1,36 +1,54 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 📊 Sales Inventory Management System
 
-## Getting Started
+A complete solution for tracking inventory, sales, customers, and employees with invoicing support.
 
-First, run the development server:
+## ✨ Key Features
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+### 📦 Product Management
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+- Add/edit products with **SKU, name, price, cost, stock levels**
+- **Barcode/QR scanning** support
+- **Category-based organization** (e.g., Electronics, Clothing)
+- **Low stock alerts** and reorder suggestions
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### 👥 Customer Management
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+- Store **customer details** (name, email, phone, address)
+- Track **purchase history & loyalty points**
+- **Customer segmentation** (VIP, bulk buyers, etc.)
 
-## Learn More
+### 👨‍💼 Employee & User Management
 
-To learn more about Next.js, take a look at the following resources:
+- **Role-based access** (Admin, Sales, Inventory Manager)
+- **Employee profiles** with contact details and permissions
+- **Login & authentication** for secure access
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+### 🧾 Invoice & Sales Tracking
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+- Generate **itemized invoices** with taxes & discounts
+- **Print/email receipts**
+- **Sales reports** (daily, weekly, monthly)
 
-## Deploy on Vercel
+### 📂 Category Management
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+- Organize products into **hierarchical categories**
+- Filter products by category in reports
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## 🗃️ Database Structure (Main Tables)
+
+| Table            | Key Fields |
+|------------------|------------|
+| **Product**      | `id`, `name`, `sku`, `category_id`, `price`, `stock`, `barcode` |
+| **Category**     | `id`, `name`, `parent_category_id` |
+| **Customer**     | `id`, `name`, `email`, `phone`, `address`, `loyalty_points` |
+| **User**        | `id`, `username`, `role`, `email`, `hashed_password` |
+| **Invoice**      | `id`, `customer_id`, `employee_id`, `date`, `total`, `payment_status` |
+| **Invoice_product**  | `id`, `invoice_id`, `product_id`, `quantity`, `unit_price` |
+
+## 🛠️ Setup & Installation
+
+### Prerequisites
+
+- **Backend**: Next.js
+- **Database**: PostgreSQL
+- **Frontend**: Next.js

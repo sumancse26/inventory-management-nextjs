@@ -1,9 +1,10 @@
 'use client';
 
+import SkeletonList from '@/components/skeleton';
 import moment from 'moment';
 import Image from 'next/image';
 
-const InvoiceDetail = ({ closeModalHandler, invInfo }) => {
+const InvoiceDetail = ({ closeModalHandler, invInfo, invDtlSkeleton }) => {
     const closeBtnHandler = () => {
         closeModalHandler();
     };
@@ -74,29 +75,39 @@ const InvoiceDetail = ({ closeModalHandler, invInfo }) => {
                     </div>
 
                     <hr className="border-t border-gray-300 dark:border-gray-700" />
+                    {invDtlSkeleton && (
+                        <div className="p-4">
+                            <SkeletonList count={2} />
+                        </div>
+                    )}
 
-                    <table className="w-full text-sm text-left">
-                        <thead className="text-gray-600 dark:text-gray-200 font-semibold border-b border-gray-300 dark:border-gray-600">
-                            <tr>
-                                <th>SL</th>
-                                <th className="py-2">Name</th>
-                                <th className="py-2 text-end">Qty</th>
-                                <th className="py-2 text-end">Price</th>
-                                <th className="py-2 text-end">Total </th>
-                            </tr>
-                        </thead>
-                        <tbody id="invoiceList" className="text-gray-600 dark:text-gray-300">
-                            {invInfo.invoice_products?.map((item, index) => (
-                                <tr key={index}>
-                                    <td>{index + 1}</td>
-                                    <td className="py-2">{item.product_name || ''}</td>
-                                    <td className="py-2 text-end">{item.qty || 0}</td>
-                                    <td className="py-2 text-end">{item.sale_price || 0}</td>
-                                    <td className="py-2 text-end">{Number(item.sale_price) * Number(item.qty) || 0}</td>
+                    {!invDtlSkeleton && (
+                        <table className="w-full text-sm text-left">
+                            <thead className="text-gray-600 dark:text-gray-200 font-semibold border-b border-gray-300 dark:border-gray-600">
+                                <tr>
+                                    <th>SL</th>
+                                    <th className="py-2">Name</th>
+                                    <th className="py-2 text-end">Qty</th>
+                                    <th className="py-2 text-end">Price</th>
+                                    <th className="py-2 text-end">Total </th>
                                 </tr>
-                            ))}
-                        </tbody>
-                    </table>
+                            </thead>
+
+                            <tbody id="invoiceList" className="text-gray-600 dark:text-gray-300">
+                                {invInfo.invoice_products?.map((item, index) => (
+                                    <tr key={index}>
+                                        <td>{index + 1}</td>
+                                        <td className="py-2">{item.product_name || ''}</td>
+                                        <td className="py-2 text-end">{item.qty || 0}</td>
+                                        <td className="py-2 text-end">{item.sale_price || 0}</td>
+                                        <td className="py-2 text-end">
+                                            {Number(item.sale_price) * Number(item.qty) || 0}
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    )}
 
                     <hr className="border-t border-gray-300 dark:border-gray-700" />
 

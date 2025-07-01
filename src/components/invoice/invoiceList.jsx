@@ -22,6 +22,7 @@ const InvoiceList = () => {
     const [showSkeleton, setShowSkeleton] = useState(false);
     const [showCollection, setShowCollection] = useState(false);
     const [selectedInv, setSelectedInv] = useState({});
+    const [invDtlSkeleton, setInvDtlSkeleton] = useState(false);
 
     const { start, stop } = useApiLoader();
     const { openDialog } = useDialog();
@@ -49,16 +50,19 @@ const InvoiceList = () => {
 
     const getInvById = async (data) => {
         try {
+            setInvDtlSkeleton(true);
             const res = await invoiceInfoAction(data.id);
+
             setInvInfo(res.invoiceInfo || {});
+            setInvDtlSkeleton(false);
         } catch (err) {
             console.log(err.message);
         }
     };
 
     const viewInvHandler = async (data) => {
-        await getInvById(data);
         setShowInvDtl(true);
+        await getInvById(data);
     };
 
     const closeModalHandler = () => {
@@ -223,7 +227,13 @@ const InvoiceList = () => {
                 </div>
             </div>
 
-            {showInvDtl && <InvoiceDetail closeModalHandler={closeModalHandler} invInfo={invInfo} />}
+            {showInvDtl && (
+                <InvoiceDetail
+                    closeModalHandler={closeModalHandler}
+                    invInfo={invInfo}
+                    invDtlSkeleton={invDtlSkeleton}
+                />
+            )}
             {showCollection && (
                 <Collection
                     onClose={onCloseCollection}

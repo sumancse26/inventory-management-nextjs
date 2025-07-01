@@ -18,11 +18,12 @@ const ForgotPassword = () => {
     const searchParams = useSearchParams();
     const { start, stop } = useApiLoader();
 
+    const email = searchParams.get('email');
     const handleSubmit = async (event) => {
         event.preventDefault();
 
         setLoadingState(true);
-        const email = searchParams.get('email');
+
         const formData = {
             otp: otp,
             password: newPassword,

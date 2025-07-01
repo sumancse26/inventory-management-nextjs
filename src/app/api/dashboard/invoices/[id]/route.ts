@@ -1,10 +1,10 @@
 import prisma from '@/config/prisma';
 import { NextRequest, NextResponse } from 'next/server';
 
-export const GET = async (req: NextRequest, context: { params: { id: string } }): Promise<NextResponse> => {
+export const GET = async (req: NextRequest, { params }: { params: { id: string } }): Promise<NextResponse> => {
     try {
         // const { params } = await context;
-        const { id } = await context.params;
+        const { id } = await params;
 
         const userId = req.headers.get('user_id');
 

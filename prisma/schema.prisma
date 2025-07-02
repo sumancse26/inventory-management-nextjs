@@ -1,30 +1,29 @@
-datasource db {
-    url         = env("DATABASE_URL")
-    provider    = "postgresql"
+generator client {
+  provider = "prisma-client-js"
 }
 
-generator client {
-    provider = "prisma-client-js"
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
 }
 
 model users {
-  id                Int                @id @default(autoincrement())
-  first_name        String             @db.VarChar(50)
-  last_name         String             @db.VarChar(50)
-  image             String?            @default("") @db.VarChar(100)
-  email             String             @unique @db.VarChar(50)
-  mobile            String             @db.VarChar(20)
-  password          String
-  otp               String             @db.VarChar(10)
-  role              Int                @default(2)
-  created_at        DateTime           @default(now())
-  updated_at        DateTime           @updatedAt
-
-  categories        categories[]
-  products          products[]
-  customers         customers[]
-  invoices          invoices[]
-  invoice_products  invoice_products[]
+  id               Int                @id @default(autoincrement())
+  first_name       String             @db.VarChar(50)
+  last_name        String             @db.VarChar(50)
+  email            String             @unique @db.VarChar(50)
+  mobile           String             @db.VarChar(20)
+  password         String
+  otp              String             @db.VarChar(10)
+  created_at       DateTime           @default(now())
+  updated_at       DateTime           @updatedAt
+  image            String?            @default("") @db.VarChar(100)
+  role             Int                @default(2)
+  categories       categories[]
+  customers        customers[]
+  invoice_products invoice_products[]
+  invoices         invoices[]
+  products         products[]
 }
 
 model customers {
@@ -35,89 +34,80 @@ model customers {
   user_id    Int
   created_at DateTime   @default(now())
   updated_at DateTime   @updatedAt
-
-  user       users      @relation(fields: [user_id], references: [id], onDelete: Restrict)
+  user       users      @relation(fields: [user_id], references: [id])
   invoices   invoices[]
 }
-
 
 model categories {
   id         Int        @id @default(autoincrement())
   name       String     @db.VarChar(50)
-  user_id    Int
   created_at DateTime   @default(now())
   updated_at DateTime   @updatedAt
-
+  user_id    Int
+  users      users      @relation(fields: [user_id], references: [id])
   products   products[]
-  users      users      @relation(fields: [user_id], references: [id], onDelete: Restrict)
 }
 
-//tp, mrp
 model products {
-  id               Int               @id @default(autoincrement())
+  id               Int                @id @default(autoincrement())
   user_id          Int
   category_id      Int
-  name             String            @db.VarChar(100)
-  prod_code        String            @default("0000") @db.VarChar(50)
-  trade_price      Int               @default(0)
-  stock            Int               @default(0)
-  unit_price       Int               @default(0)
-  mrp              Int               @default(0)
-  vat_pct          Int               @default(0)
-  uom              Int               @default(1)
-  uom_name         String            @default("Pcs")
-  discount         Int               @default(0)
-  img_url          String?           @default("") @db.VarChar(100)
-  created_at       DateTime          @default(now())
-  updated_at       DateTime          @updatedAt
-
-  users            users             @relation(fields: [user_id], references: [id], onDelete: Restrict)
-  categories       categories        @relation(fields: [category_id], references: [id], onDelete: Cascade)
+  name             String             @db.VarChar(100)
+  img_url          String?            @default("") @db.VarChar(100)
+  created_at       DateTime           @default(now())
+  updated_at       DateTime           @updatedAt
+  discount         Int                @default(0)
+  stock            Int                @default(0)
+  uom              Int                @default(1)
+  uom_name         String             @default("Pcs")
+  vat_pct          Int                @default(0)
+  prod_code        String             @default("0000") @db.VarChar(50)
+  mrp              Int                @default(0)
+  trade_price      Int                @default(0)
+  unit_price       Int                @default(0)
   invoice_products invoice_products[]
+  categories       categories         @relation(fields: [category_id], references: [id], onDelete: Cascade)
+  users            users              @relation(fields: [user_id], references: [id])
 }
 
- 
-enum collectionType {
-  pending
-  full
-  partial
-}
 model invoices {
-  id                      Int               @id @default(autoincrement())
-  inv_no                  String            @db.VarChar(20) @default("00000000")
-  total                   String            @db.VarChar(50)
-  discount                String            @db.VarChar(50)
-  vat_pct                 Int               @default(0)
-  vat_amount              Int               @default(0)
-  payable                 String            @db.VarChar(50)
-  user_id                 Int
-  customer_id             Int
-  status                  Int               @default(1)
-  collection_type         collectionType    @default(pending)
-  collection_amount       Int               @default(0)
-  created_at              DateTime          @default(now())
-  updated_at              DateTime          @updatedAt
-
-  user                    users             @relation(fields: [user_id], references: [id], onDelete: Restrict)
-  customer                customers         @relation(fields: [customer_id], references: [id], onDelete: Restrict)
-  invoice_products        invoice_products[]
+  id                Int                @id @default(autoincrement())
+  total             String             @db.VarChar(50)
+  discount          String             @db.VarChar(50)
+  payable           String             @db.VarChar(50)
+  user_id           Int
+  customer_id       Int
+  created_at        DateTime           @default(now())
+  updated_at        DateTime           @updatedAt
+  vat_amount        Int                @default(0)
+  vat_pct           Int                @default(0)
+  status            Int                @default(1)
+  collection_amount Int                @default(0)
+  collection_type   collectionType     @default(pending)
+  inv_no            String             @default("00000000") @db.VarChar(20)
+  invoice_products  invoice_products[]
+  customer          customers          @relation(fields: [customer_id], references: [id])
+  user              users              @relation(fields: [user_id], references: [id])
 }
-
 
 model invoice_products {
   id           Int       @id @default(autoincrement())
   invoice_id   Int
-  product_id   Int?      
+  product_id   Int?
   user_id      Int
-  product_name String    @default("") @db.VarChar(100)
-  product_code String    @default("000") @db.VarChar(50)
   qty          String    @db.VarChar(50)
   sale_price   String    @db.VarChar(50)
   created_at   DateTime  @default(now())
   updated_at   DateTime  @updatedAt
-
+  product_name String    @default("") @db.VarChar(100)
+  product_code String    @default("000") @db.VarChar(50)
   invoice      invoices  @relation(fields: [invoice_id], references: [id], onDelete: Cascade)
-  product      products? @relation(fields: [product_id], references: [id], onDelete: SetNull)
-  user         users     @relation(fields: [user_id], references: [id], onDelete: Restrict)
+  product      products? @relation(fields: [product_id], references: [id])
+  user         users     @relation(fields: [user_id], references: [id])
 }
 
+enum collectionType {
+  full
+  partial
+  pending
+}

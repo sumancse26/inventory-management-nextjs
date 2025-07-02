@@ -2,6 +2,8 @@ import prisma from '@/config/prisma';
 import { encryptPassword } from '@/utils';
 import { NextRequest, NextResponse } from 'next/server';
 
+export const runtime = 'nodejs';
+
 interface UserBody {
     first_name: string;
     last_name: string;
@@ -17,6 +19,7 @@ export const POST = async (req: NextRequest): Promise<NextResponse> => {
         if (!body.first_name || !body.last_name || !body.mobile || !body.email || !body.password) {
             return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
         }
+        console.log('body', body);
         const existingUser = await prisma.users.findUnique({
             where: {
                 email: body.email

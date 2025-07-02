@@ -2,6 +2,7 @@ import prisma from '@/config/prisma';
 import { generateInvoiceNumber } from '@/utils';
 import { NextRequest, NextResponse } from 'next/server';
 
+export const runtime = 'nodejs';
 type productType = {
     product_id: number;
     qty: number;

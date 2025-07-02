@@ -1,6 +1,8 @@
 import prisma from '@/config/prisma';
 import { NextRequest, NextResponse } from 'next/server';
 
+export const runtime = 'nodejs';
+
 export const GET = async (req: NextRequest): Promise<NextResponse> => {
     try {
         const userId = req.headers.get('user_id');

@@ -2,6 +2,7 @@
 import prisma from '@/config/prisma';
 import { NextRequest, NextResponse } from 'next/server';
 
+export const runtime = 'nodejs';
 export const GET = async (req: NextRequest, { params }: any) => {
     try {
         const { id } = params;

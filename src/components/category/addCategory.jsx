@@ -26,28 +26,29 @@ const AddCategory = (props) => {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
             <div className="relative w-full max-w-md bg-white dark:bg-neutral-800 rounded-2xl shadow-xl p-6 animate-fadeIn">
                 {/* Close Button */}
-                <button
-                    onClick={closeModal}
-                    className="absolute top-4 right-4 text-gray-500 hover:text-gray-700 dark:text-neutral-400 dark:hover:text-white transition"
-                    aria-label="Close">
-                    <svg
-                        className="w-6 h-6"
-                        xmlns="http://www.w3.org/2000/svg"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                        strokeWidth="2">
-                        <path d="M18 6L6 18" />
-                        <path d="M6 6l12 12" />
-                    </svg>
-                </button>
-
-                {/* Modal Title */}
-                <h2 className="text-2xl font-bold text-gray-800 dark:text-white mb-4">Add Category</h2>
+                <div className="flex justify-between items-center border-b border-gray-400 py-2">
+                    {/* Modal Title */}
+                    <h5 className="text-xl font-bold text-gray-800 dark:text-white mt-[-20px]">Add Category</h5>
+                    <button
+                        onClick={closeModal}
+                        className="absolute top-4 right-4 text-gray-500 hover:text-gray-700 dark:text-neutral-400 dark:hover:text-white transition"
+                        aria-label="Close">
+                        <svg
+                            className="w-6 h-6"
+                            xmlns="http://www.w3.org/2000/svg"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                            strokeWidth="2">
+                            <path d="M18 6L6 18" />
+                            <path d="M6 6l12 12" />
+                        </svg>
+                    </button>
+                </div>
 
                 {/* Form */}
-                <form className="space-y-5" onSubmit={submitCategory}>
-                    <div>
+                <form className="space-y-5 py-3" onSubmit={submitCategory}>
+                    <div className="h-[130px] border-b border-gray-400 mt-4">
                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                             Category Name <span className="text-red-600">*</span>
                         </label>

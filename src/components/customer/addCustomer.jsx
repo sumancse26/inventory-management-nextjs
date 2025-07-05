@@ -20,29 +20,30 @@ const AddCustomer = ({ onClose, saveCustomer, customer }) => {
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
             <div className="bg-white dark:bg-neutral-800 rounded-2xl shadow-2xl w-full max-w-md p-6 relative transform transition-all duration-300 scale-100 animate-fadeIn">
-                {/* Close Button */}
-                <button
-                    onClick={() => onClose(false)}
-                    type="button"
-                    className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 dark:hover:text-white transition">
-                    <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        className="w-5 h-5"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                        strokeWidth={2}>
-                        <path d="M6 18L18 6M6 6l12 12" />
-                    </svg>
-                </button>
-
-                {/* Title */}
-                <h2 className="text-2xl font-bold text-gray-800 dark:text-white mb-6 text-center">
-                    {customerInfo.id ? 'Update' : 'Add New'} Customer
-                </h2>
+                <div className="flex justify-between items-center py-3 border-b border-gray-400">
+                    {/* Title */}
+                    <h5 className="text-xl font-bold text-gray-800 dark:text-white text-center mt-[-20px]">
+                        {customerInfo.id ? 'Update' : 'Add New'} Customer
+                    </h5>
+                    {/* Close Button */}
+                    <button
+                        onClick={() => onClose(false)}
+                        type="button"
+                        className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 dark:hover:text-white transition">
+                        <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            className="w-5 h-5"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                            strokeWidth={2}>
+                            <path d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
+                </div>
 
                 {/* Form */}
-                <form className="space-y-4" onSubmit={saveBtnHandler}>
+                <form className="space-y-4 pt-3" onSubmit={saveBtnHandler}>
                     {/* Name */}
                     <div>
                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
@@ -91,7 +92,7 @@ const AddCustomer = ({ onClose, saveCustomer, customer }) => {
                     </div>
 
                     {/* Actions */}
-                    <div className="flex gap-3 pt-4 justify-center">
+                    <div className="flex gap-3 pt-4 justify-center border-t border-gray-400">
                         <button
                             onClick={() => onClose(false)}
                             type="button"

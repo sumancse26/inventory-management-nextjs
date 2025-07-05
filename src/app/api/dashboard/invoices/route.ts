@@ -228,9 +228,51 @@ export const DELETE = async (req: NextRequest): Promise<NextResponse> => {
             return NextResponse.json({ message: 'Invoice id is required' }, { status: 400 });
         }
 
-        await prisma.invoices.update({
-            where: { id: invId },
-            data: { status: 0 }
+        await prisma.$transaction(async (tx) => {
+            const invoiceProducts = await tx.invoice_products.findMany({
+                where: {
+                    invoice_id: invId,
+                    user_id: Number(userId)
+                }
+            });
+
+            const stockProducts = invoiceProducts.map((p) => ({
+                product_id: p.product_id,
+                qty: p.qty
+            }));
+
+            const products = await tx.products.findMany({
+                where: {
+                    id: { in: stockProducts.map((p) => p.product_id) }
+                },
+                select: {
+                    id: true,
+                    stock: true
+                }
+            });
+
+            const updatedProducts = products.map((p) => {
+                const product = stockProducts.find((ip) => ip.product_id === p.id);
+                return {
+                    id: p.id,
+                    stock: Number(p.stock) + Number(product?.qty || 0)
+                };
+            });
+
+            // Individual update per product
+            await Promise.all(
+                updatedProducts.map((product) =>
+                    tx.products.update({
+                        where: { id: product.id },
+                        data: { stock: product.stock }
+                    })
+                )
+            );
+
+            await tx.invoices.update({
+                where: { id: invId },
+                data: { status: 0 }
+            });
         });
 
         // await prisma.$transaction(async (tx) => {

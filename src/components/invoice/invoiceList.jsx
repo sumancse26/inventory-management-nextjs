@@ -171,7 +171,7 @@ const InvoiceList = () => {
                                         {inv.status == 1 ? 'active' : inv.status == 2 ? 'inactive' : 'cancelled'}
                                     </td>
                                     <td className="px-5 py-3 flex items-end justify-end gap-3 text-end">
-                                        {inv.collection_type != 'full' && (
+                                        {inv.collection_type != 'full' && inv.status == 1 && (
                                             <button
                                                 onClick={() => collectionInvoiceHandler(inv)}
                                                 className="material-icons opacity-0 group-hover:opacity-100 bg-indigo-600 hover:bg-indigo-700 text-white rounded-full w-8 h-8 flex items-center justify-center transition"
@@ -186,7 +186,7 @@ const InvoiceList = () => {
                                             title="View">
                                             <span className="material-icons text-sm">visibility</span>
                                         </button>
-                                        {inv.collection_amount == 0 && (
+                                        {inv.collection_amount == 0 && inv.status == 1 && (
                                             <button
                                                 onClick={() => cancelInvoice(inv)}
                                                 className="material-icons opacity-0 group-hover:opacity-100 bg-red-500 hover:bg-red-600 text-white rounded-full w-8 h-8 flex items-center justify-center transition"

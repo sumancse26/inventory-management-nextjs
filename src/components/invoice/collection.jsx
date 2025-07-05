@@ -1,11 +1,17 @@
+import Loader from '@components/loader';
 import { useState } from 'react';
 
 const Collection = ({ selectedInv, onClose, saveCollection }) => {
     const [collection, setCollection] = useState('');
-    const collectionHandler = (e) => {
+    const [loadingState, setLoadingState] = useState(false);
+
+    const collectionHandler = async (e) => {
         e.preventDefault();
 
-        saveCollection({ collection_amount: collection, invoice_id: selectedInv.id });
+        setLoadingState(true);
+        const res = await saveCollection({ collection_amount: collection, invoice_id: selectedInv.id });
+
+        setLoadingState(false);
     };
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
@@ -83,9 +89,10 @@ const Collection = ({ selectedInv, onClose, saveCollection }) => {
                             Cancel
                         </button>
                         <button
+                            disabled={loadingState}
                             type="submit"
                             className="flex items-center justify-center px-4 py-2 text-sm font-medium rounded-lg text-white bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 focus:outline-none focus:ring-2 focus:ring-purple-500 transition">
-                            Make Collection
+                            Make Collection {loadingState && <Loader />}
                         </button>
                     </div>
                 </form>

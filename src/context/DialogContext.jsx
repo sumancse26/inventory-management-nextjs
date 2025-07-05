@@ -120,13 +120,18 @@ export const DialogProvider = ({ children }) => {
                     ref={dialogRef}
                     onMouseEnter={() => setIsHovered(true)}
                     onMouseLeave={() => setIsHovered(false)}
-                    className={`w-[400px] min-h-[250px] p-6 bg-white dark:bg-neutral-800 rounded-lg shadow-xl flex flex-col justify-start items-center gap-8 relative transition-all duration-300 dialog__container dialog__${dialog.type}`}>
+                    className={`w-[400px] min-h-[200px] p-6 bg-white dark:bg-neutral-800 rounded-lg shadow-xl flex flex-col justify-start items-center gap-8 relative transition-all duration-300 dialog__container dialog__${dialog.type}`}>
                     <div className="dialog__content text-center w-full">
                         <div className="dialog__icon mx-auto mb-4">
                             {dialog.type === 'progress' ? (
                                 <span className="dialog__loader border-t-4 border-4 border-white rounded-full w-11 h-11 animate-spin"></span>
                             ) : (
-                                <span className="material-icons text-4xl bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded hover:from-blue-600 hover:to-purple-700 focus:outline-none">
+                                <span
+                                    className={`material-icons text-4xl bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-full hover:from-blue-600 hover:to-purple-700 p-2 ${
+                                        dialog.type === 'error'
+                                            ? 'bg-gradient-to-r from-red-600 to-red-400'
+                                            : 'bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded hover:from-blue-600 hover:to-purple-700 focus:outline-none'
+                                    }`}>
                                     {dialog.iconClass}
                                 </span>
                             )}

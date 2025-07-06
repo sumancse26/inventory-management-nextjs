@@ -1,8 +1,8 @@
 import { jwtVerify } from 'jose';
 import { cookies } from 'next/headers';
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 
-export async function middleware(req: NextRequest) {
+export async function middleware(req) {
     const { pathname } = req.nextUrl;
 
     const isProtected =
@@ -30,8 +30,8 @@ export async function middleware(req: NextRequest) {
         const secret = new TextEncoder().encode(process.env.JWT_SECRET);
         const { payload } = await jwtVerify(token, secret);
 
-        const user_id = payload.user_id as string;
-        const email = payload.email as string;
+        const user_id = payload.user_id;
+        const email = payload.email;
 
         const requestHeaders = new Headers(req.headers);
         requestHeaders.set('user_id', user_id);

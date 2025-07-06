@@ -1,16 +1,11 @@
 import prisma from '@/config/prisma';
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 
 export const runtime = 'nodejs';
 
-type otpType = {
-    otp: string;
-    email: string;
-};
-
-export const POST = async (req: NextRequest): Promise<NextResponse> => {
+export const POST = async (req) => {
     try {
-        const body: otpType = await req.json();
+        const body = await req.json();
 
         if (!body.otp) {
             return NextResponse.json({ message: 'Otp is required' }, { status: 400 });
@@ -32,7 +27,7 @@ export const POST = async (req: NextRequest): Promise<NextResponse> => {
         });
 
         return NextResponse.json({ message: 'Success' }, { status: 200 });
-    } catch (error: unknown) {
+    } catch (error) {
         if (error instanceof Error) {
             console.log(error.message);
         } else {

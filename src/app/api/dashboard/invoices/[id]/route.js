@@ -1,11 +1,9 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import prisma from '@/config/prisma';
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 
 export const runtime = 'nodejs';
-export const GET = async (req: NextRequest, { params }: any) => {
+export const GET = async (req, { params }) => {
     try {
-        // const { params } = await context;
         const { id } = params;
 
         const userId = req.headers.get('user_id');

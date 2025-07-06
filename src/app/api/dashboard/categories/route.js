@@ -1,17 +1,13 @@
 import prisma from '@/config/prisma';
 import fs from 'fs';
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import path from 'path';
 
 export const runtime = 'nodejs';
 
-type CategoryBody = {
-    name: string;
-};
-
-export const POST = async (req: NextRequest): Promise<NextResponse> => {
+export const POST = async (req) => {
     try {
-        const body: CategoryBody = await req.json();
+        const body = await req.json();
         const userId = req.headers.get('user_id');
 
         if (!userId) {
@@ -34,7 +30,7 @@ export const POST = async (req: NextRequest): Promise<NextResponse> => {
         });
 
         return NextResponse.json({ message: 'Category Created', success: true, data: category }, { status: 200 });
-    } catch (error: unknown) {
+    } catch (error) {
         if (error instanceof Error) {
             console.log(error.message);
         } else {
@@ -51,7 +47,7 @@ export const POST = async (req: NextRequest): Promise<NextResponse> => {
     }
 };
 
-export const GET = async (req: NextRequest): Promise<NextResponse> => {
+export const GET = async (req) => {
     try {
         const userId = req.headers.get('user_id');
         const categories = await prisma.categories.findMany({
@@ -87,7 +83,7 @@ export const GET = async (req: NextRequest): Promise<NextResponse> => {
     }
 };
 
-export const PUT = async (req: NextRequest): Promise<NextResponse> => {
+export const PUT = async (req) => {
     try {
         const userId = req.headers.get('user_id');
         if (!userId) {
@@ -118,7 +114,7 @@ export const PUT = async (req: NextRequest): Promise<NextResponse> => {
     }
 };
 
-export const DELETE = async (req: NextRequest): Promise<NextResponse> => {
+export const DELETE = async (req) => {
     try {
         const userId = req.headers.get('user_id');
         if (!userId) {

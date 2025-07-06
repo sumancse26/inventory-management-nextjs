@@ -1,24 +1,13 @@
 import prisma from '@/config/prisma';
 import { decryptPassword, jwtEncode } from '@/utils';
 import { cookies } from 'next/headers';
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 
 export const runtime = 'nodejs';
-interface loginInfo {
-    email: string;
-    password: string;
-}
 
-interface jwtPayload {
-    name: string;
-    email: string;
-    user_id: number | string;
-    role: string;
-}
-
-export const POST = async (req: NextRequest): Promise<NextResponse> => {
+export const POST = async (req) => {
     try {
-        const data: loginInfo = await req.json();
+        const data = await req.json();
         if (!data.email || !data.password) {
             return NextResponse.json({ message: 'Please enter email and password' }, { status: 400 });
         }
@@ -39,7 +28,7 @@ export const POST = async (req: NextRequest): Promise<NextResponse> => {
             return NextResponse.json({ message: 'Incorrect password' }, { status: 400 });
         }
 
-        const payload: jwtPayload = {
+        const payload = {
             name: selectedUser.first_name,
             email: selectedUser.email,
             user_id: selectedUser.id,
@@ -67,7 +56,7 @@ export const POST = async (req: NextRequest): Promise<NextResponse> => {
             },
             token
         });
-    } catch (err: unknown) {
+    } catch (err) {
         if (err instanceof Error) {
             return NextResponse.json({ error: err.message }, { status: 500 });
         } else {

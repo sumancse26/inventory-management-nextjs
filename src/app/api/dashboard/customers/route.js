@@ -1,8 +1,8 @@
 import prisma from '@/config/prisma';
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 
 export const runtime = 'nodejs';
-export const POST = async (req: NextRequest): Promise<NextResponse> => {
+export const POST = async (req) => {
     try {
         const userId = req.headers.get('user_id');
         if (!userId) {
@@ -53,7 +53,7 @@ export const POST = async (req: NextRequest): Promise<NextResponse> => {
     }
 };
 
-export const PUT = async (req: NextRequest): Promise<NextResponse> => {
+export const PUT = async (req) => {
     try {
         const userId = req.headers.get('user_id');
         if (!userId) {
@@ -100,7 +100,7 @@ export const PUT = async (req: NextRequest): Promise<NextResponse> => {
     }
 };
 
-export const GET = async (req: NextRequest): Promise<NextResponse> => {
+export const GET = async (req) => {
     try {
         const userId = req.headers.get('user_id');
         if (!userId) {
@@ -141,7 +141,7 @@ export const GET = async (req: NextRequest): Promise<NextResponse> => {
     }
 };
 
-export const DELETE = async (req: NextRequest): Promise<NextResponse> => {
+export const DELETE = async (req) => {
     try {
         const userId = req.headers.get('user_id');
         if (!userId) {

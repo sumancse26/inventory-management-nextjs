@@ -1,33 +1,17 @@
 import prisma from '@/config/prisma';
 import { generateInvoiceNumber } from '@/utils';
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 
 export const runtime = 'nodejs';
-type productType = {
-    product_id: number;
-    qty: number;
-    sale_price: number;
-    discount: number;
-    item_total: number;
-    vat_pct: number;
-    product_name: string;
-    payable: string;
-    product_code: string;
-    unit_price: number;
-};
 
-type userType = {
-    role: number;
-} | null;
-
-export const GET = async (req: NextRequest): Promise<NextResponse> => {
+export const GET = async (req) => {
     try {
         const userId = req.headers.get('user_id');
         if (!userId) {
             return NextResponse.json({ message: 'Unauthorized user' }, { status: 401 });
         }
 
-        const user: userType | null = await prisma.users.findFirst({
+        const user = await prisma.users.findFirst({
             where: { id: Number(userId) },
             select: {
                 role: true,
@@ -101,7 +85,7 @@ export const GET = async (req: NextRequest): Promise<NextResponse> => {
     }
 };
 
-export const POST = async (req: NextRequest): Promise<NextResponse> => {
+export const POST = async (req) => {
     try {
         const userId = req.headers.get('user_id');
 
@@ -113,7 +97,7 @@ export const POST = async (req: NextRequest): Promise<NextResponse> => {
 
         const subTotal = () => {
             return body.products.reduce(
-                (total: number, item: productType) => total + Number(item.qty || 0) * Number(item.sale_price || 0),
+                (total, item) => total + Number(item.qty || 0) * Number(item.sale_price || 0),
                 0
             );
         };
@@ -123,7 +107,7 @@ export const POST = async (req: NextRequest): Promise<NextResponse> => {
             if (body.is_gross_total) {
                 return body.discount;
             } else {
-                return body.products.reduce((total: number, item: productType) => {
+                return body.products.reduce((total, item) => {
                     return total + Number(item.discount || 0) || 0;
                 }, 0);
             }
@@ -131,7 +115,7 @@ export const POST = async (req: NextRequest): Promise<NextResponse> => {
         const totalDiscount = discountTotal();
 
         const totalVat = () => {
-            return body.products.reduce((total: number, item: productType) => {
+            return body.products.reduce((total, item) => {
                 return total + ((Number(item.unit_price) * Number(item.vat_pct) * Number(item.qty)) / 100 || 0);
             }, 0);
         };
@@ -154,7 +138,7 @@ export const POST = async (req: NextRequest): Promise<NextResponse> => {
                 }
             });
 
-            const products = body.products.map((item: productType) => {
+            const products = body.products.map((item) => {
                 return {
                     invoice_id: invoice.id,
                     product_id: item.product_id,
@@ -169,7 +153,7 @@ export const POST = async (req: NextRequest): Promise<NextResponse> => {
             await tx.invoice_products.createMany({ data: products });
 
             // Update stock from products table
-            const stockProducts = products.map((p: productType) => p.product_id);
+            const stockProducts = products.map((p) => p.product_id);
             const dbProducts = await tx.products.findMany({
                 where: {
                     id: { in: stockProducts }
@@ -181,7 +165,7 @@ export const POST = async (req: NextRequest): Promise<NextResponse> => {
             });
 
             const updatedProducts = dbProducts.map((p) => {
-                const product = products.find((ip: productType) => ip.product_id == p.id);
+                const product = products.find((ip) => ip.product_id == p.id);
                 return {
                     id: p.id,
                     stock: Number(p.stock) - Number(product?.qty || 0)
@@ -215,7 +199,7 @@ export const POST = async (req: NextRequest): Promise<NextResponse> => {
     }
 };
 
-export const DELETE = async (req: NextRequest): Promise<NextResponse> => {
+export const DELETE = async (req) => {
     try {
         const userId = req.headers.get('user_id');
         if (!userId) {
@@ -310,7 +294,7 @@ export const DELETE = async (req: NextRequest): Promise<NextResponse> => {
     }
 };
 
-export const PUT = async (req: NextRequest): Promise<NextResponse> => {
+export const PUT = async (req) => {
     try {
         const userId = req.headers.get('user_id');
 

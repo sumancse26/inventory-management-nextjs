@@ -2,13 +2,13 @@ import prisma from '@/config/prisma';
 import { generateProductCode } from '@/utils';
 import { existsSync } from 'fs';
 import { mkdir, unlink, writeFile } from 'fs/promises';
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import path from 'path';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
-export const GET = async (req: NextRequest): Promise<NextResponse> => {
+export const GET = async (req) => {
     try {
         const userId = req.headers.get('user_id');
         if (!userId) {
@@ -51,7 +51,7 @@ export const GET = async (req: NextRequest): Promise<NextResponse> => {
     }
 };
 
-export const POST = async (req: NextRequest): Promise<NextResponse> => {
+export const POST = async (req) => {
     try {
         const userId = req.headers.get('user_id');
         if (!userId) {
@@ -59,7 +59,7 @@ export const POST = async (req: NextRequest): Promise<NextResponse> => {
         }
 
         const formData = await req.formData();
-        const image = formData.get('image') as File;
+        const image = formData.get('image');
         let fileUrl = '';
         let fullPath = '';
         const prodCode = await generateProductCode(formData.get('name')?.toString() || '');
@@ -153,7 +153,7 @@ export const POST = async (req: NextRequest): Promise<NextResponse> => {
     }
 };
 
-export const PUT = async (req: NextRequest): Promise<NextResponse> => {
+export const PUT = async (req) => {
     try {
         const userId = req.headers.get('user_id');
         if (!userId) {
@@ -162,7 +162,7 @@ export const PUT = async (req: NextRequest): Promise<NextResponse> => {
 
         const formData = await req.formData();
 
-        const image = formData.get('image') as File;
+        const image = formData.get('image');
 
         const productId = Number(formData.get('id'));
         if (isNaN(productId)) {
@@ -189,7 +189,7 @@ export const PUT = async (req: NextRequest): Promise<NextResponse> => {
             }
 
             const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'application/pdf'];
-            console.log('kkkk', image.type);
+
             if (!allowedTypes.includes(image.type)) {
                 return NextResponse.json({ error: 'Invalid image type' }, { status: 400 });
             }
@@ -284,7 +284,7 @@ export const PUT = async (req: NextRequest): Promise<NextResponse> => {
     }
 };
 
-export const DELETE = async (req: NextRequest): Promise<NextResponse> => {
+export const DELETE = async (req) => {
     try {
         const userId = req.headers.get('user_id');
         if (!userId) {

@@ -1,17 +1,12 @@
 import prisma from '@/config/prisma';
 import { encryptPassword } from '@/utils';
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 
 export const runtime = 'nodejs';
 
-type ResetPasswordType = {
-    otp: string;
-    password: string;
-    email: string;
-};
-export const POST = async (req: NextRequest): Promise<NextResponse> => {
+export const POST = async (req) => {
     try {
-        const { otp, password, email }: ResetPasswordType = await req.json();
+        const { otp, password, email } = await req.json();
         const hashedPassword = await encryptPassword(password);
 
         const user = await prisma.users.findUnique({

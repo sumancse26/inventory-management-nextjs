@@ -70,6 +70,11 @@ model products {
   users            users              @relation(fields: [user_id], references: [id])
 }
 
+enum collectionType {
+  full
+  partial
+  pending
+}
 model invoices {
   id                Int                @id @default(autoincrement())
   total             String             @db.VarChar(50)
@@ -104,10 +109,4 @@ model invoice_products {
   invoice      invoices  @relation(fields: [invoice_id], references: [id], onDelete: Cascade)
   product      products? @relation(fields: [product_id], references: [id])
   user         users     @relation(fields: [user_id], references: [id])
-}
-
-enum collectionType {
-  full
-  partial
-  pending
 }

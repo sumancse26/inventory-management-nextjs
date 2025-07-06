@@ -2,9 +2,7 @@ import { isServer } from '@/utils/checkServer';
 import Cookies from 'js-cookie';
 
 const BASE_URL =
-    process.env.NODE_ENV === 'production'
-        ? 'https://inventory-management-nextjs-nu.vercel.app'
-        : 'http://localhost:3000';
+    process.env.NODE_ENV === 'production' ? 'https://sales-inventory-two.vercel.app' : 'http://localhost:3000';
 
 export const fetchApi = async (endPoint, options = {}) => {
     let token = '';

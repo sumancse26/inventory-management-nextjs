@@ -2,11 +2,14 @@ import { isServer } from '@/utils/checkServer';
 import Cookies from 'js-cookie';
 
 //const BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000";
-const BASE_URL = process.env.NODE_ENV === 'production' ? '' : 'http://localhost:3000';
+const BASE_URL =
+    process.env.NODE_ENV === 'production'
+        ? 'https://inventory-management-nextjs-nu.vercel.app'
+        : 'http://localhost:3000';
 
 export const fetchApi = async (endPoint, options = {}) => {
     let token = '';
-
+    console.log(' process.env.NODE_ENV', process.env.NODE_ENV);
     if (isServer()) {
         const { cookies } = await import('next/headers');
         const cookieStore = await cookies();

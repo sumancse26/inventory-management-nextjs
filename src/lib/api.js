@@ -6,7 +6,6 @@ const BASE_URL =
 
 export const fetchApi = async (endPoint, options = {}) => {
     let token = '';
-    console.log(' process.env.NODE_ENV', process.env.NODE_ENV);
     if (isServer()) {
         const { cookies } = await import('next/headers');
         const cookieStore = await cookies();

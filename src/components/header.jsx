@@ -30,8 +30,11 @@ const Header = ({ logoHandler }) => {
             stop();
             if (result.success) {
                 setProfile(result.user);
+            } else {
+                setProfile({});
             }
         } catch (error) {
+            setProfile({});
             stop();
             showAlert('Failed to fetch profile', 'error');
         }
@@ -113,11 +116,17 @@ const Header = ({ logoHandler }) => {
                                 onClick={() => setDropdownOpen((prev) => !prev)}
                                 className="flex items-center space-x-2 focus:outline-none">
                                 <div className="relative">
-                                    <img
-                                        className="h-8 w-8 rounded-full"
-                                        src={profile.image || null}
-                                        alt="User profile"
-                                    />
+                                    {profile?.image && (
+                                        <img
+                                            className="h-8 w-8 rounded-full"
+                                            src={profile?.image || null}
+                                            alt="User profile"
+                                        />
+                                    )}
+
+                                    {(!profile?.image || profile?.image == '') && (
+                                        <img className="h-8 w-8 rounded-full" src={null} alt="User profile" />
+                                    )}
                                     <span className="absolute bottom-0 right-0 h-2 w-2 bg-green-500 rounded-full ring-2 ring-white dark:ring-gray-900" />
                                 </div>
                                 <span className="hidden md:inline-block text-sm font-medium text-gray-700 dark:text-gray-200">

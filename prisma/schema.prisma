@@ -17,7 +17,7 @@ model users {
   otp              String             @db.VarChar(10)
   created_at       DateTime           @default(now())
   updated_at       DateTime           @updatedAt
-  image            String?            @default("") @db.VarChar(100)
+  image            String?            @default("") @db.Text
   role             Int                @default(2)
   categories       categories[]
   customers        customers[]

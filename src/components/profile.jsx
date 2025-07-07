@@ -6,7 +6,6 @@ import { useApiLoader } from '@/lib/useApiLoader';
 import { updateProfile } from '@/services/inventory';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
-import { NextResponse } from 'next/server';
 import { useEffect, useState } from 'react';
 
 const UpdateProfile = () => {
@@ -33,6 +32,7 @@ const UpdateProfile = () => {
         try {
             start();
             const profile = await getProfileAction();
+            console.log('profile', profile);
             if (profile.success) {
                 setFormData({
                     first_name: profile.user?.first_name || '',
@@ -61,42 +61,98 @@ const UpdateProfile = () => {
 
     const handleImageChange = (e) => {
         const file = e.target.files?.[0];
-        if (file) {
-            setProfileImage(file);
-            setPreview(URL.createObjectURL(file));
-        }
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onloadend = () => {
+            const base64WithMime = reader.result; // full data string with MIME prefix
+            setPreview(base64WithMime); // for display
+
+            // Save full base64 string (with mime prefix) to DB
+            setFormData((prev) => ({
+                ...prev,
+                image: base64WithMime
+            }));
+        };
+
+        reader.readAsDataURL(file);
+
+        // if (file) {
+        //     setProfileImage(file);
+        //     setPreview(URL.createObjectURL(file));
+        // }
     };
+
+    // const handleSubmit = async (e) => {
+    //     e.preventDefault();
+
+    //     try {
+    //         start();
+
+    //         let imageUrl = '';
+
+    //         if (profileImage instanceof File) {
+    //             alert(2);
+    //             imageUrl = await uploadFile(profileImage);
+    //         }
+    //         console.log('imageUrl', imageUrl);
+
+    //         const payload = {
+    //             first_name: formData.first_name,
+    //             last_name: formData.last_name,
+    //             email: formData.email,
+    //             mobile: formData.mobile,
+    //             imageUrl: imageUrl
+    //         };
+    //         const res = await updateProfile(payload);
+    //         stop();
+    //         if (res.success) {
+    //             showAlert('Profile updated successfully', 'success');
+    //             router.push('/dashboard');
+    //         }
+    //     } catch (err) {
+    //         stop();
+    //         showAlert('Failed to update profile', 'error');
+    //         return NextResponse.json({
+    //             success: false,
+    //             message: 'Failed to update profile',
+    //             error: err.message
+    //         });
+    //     }
+    // };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
 
         try {
             start();
-            const data = new FormData();
-            data.append('first_name', formData.first_name);
 
-            data.append('last_name', formData.last_name);
-            data.append('email', formData.email);
-            data.append('mobile', formData.mobile);
+            let imageUrl = formData.image || ''; // Use existing image if no new upload
 
             if (profileImage instanceof File) {
-                data.append('image', profileImage);
             }
 
-            const res = await updateProfile(data);
+            const payload = {
+                first_name: formData.first_name,
+                last_name: formData.last_name,
+                email: formData.email,
+                mobile: formData.mobile,
+                image: imageUrl
+            };
+
+            const res = await updateProfile(payload); // make sure updateProfile sends JSON body
+
             stop();
+
             if (res.success) {
                 showAlert('Profile updated successfully', 'success');
                 router.push('/dashboard');
+            } else {
+                showAlert(res.message || 'Failed to update profile', 'error');
             }
         } catch (err) {
             stop();
             showAlert('Failed to update profile', 'error');
-            return NextResponse.json({
-                success: false,
-                message: 'Failed to update profile',
-                error: err.message
-            });
+            console.error(err);
         }
     };
 

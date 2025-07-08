@@ -92,10 +92,20 @@ const AddProduct = ({ isOpen, onClose, categoryList, handleSubmit, selectedProdu
 
     const handleImageChange = (e) => {
         const file = e.target.files?.[0];
-        if (file) {
-            setProductImage(file);
-            setPreview(URL.createObjectURL(file));
-        }
+        if (!file) return;
+        const reader = new FileReader();
+
+        reader.onloadend = () => {
+            const base64WithMime = reader.result;
+            setPreview(base64WithMime);
+
+            setProductInfo((prev) => ({
+                ...prev,
+                image: base64WithMime
+            }));
+        };
+
+        reader.readAsDataURL(file);
     };
 
     const handleInputChange = (e) => {
@@ -121,26 +131,30 @@ const AddProduct = ({ isOpen, onClose, categoryList, handleSubmit, selectedProdu
         e.preventDefault();
         setLoadingState(true);
 
-        const data = new FormData();
-        data.append('id', selectedProduct.id);
-        data.append('name', productInfo.name);
-        data.append('prod_code', productInfo.prod_code);
-        data.append('price', productInfo.price);
-        data.append('mrp', productInfo.mrp);
-        data.append('category_id', category);
-        data.append('stock', productInfo.stock);
-        data.append('vat_pct', productInfo.vat_pct);
-        data.append('uom', productInfo.uom);
-        data.append('uom_name', productInfo.uom_name);
-        data.append('discount', productInfo.discount);
+        const data = {
+            id: selectedProduct.id || null,
+            name: productInfo.name,
+            prod_code: productInfo.prod_code,
+            price: productInfo.price,
+            mrp: productInfo.mrp,
+            category_id: category,
+            stock: productInfo.stock,
+            vat_pct: productInfo.vat_pct,
+            uom: productInfo.uom,
+            uom_name: productInfo.uom_name,
+            discount: productInfo.discount,
+            image: productInfo.image
+        };
 
-        if (productImage instanceof File) {
-            data.append('image', productImage);
-        } else {
-            data.append('image', null);
-        }
-
-        if (productInfo.name == '' || productInfo.price == '' || category == '' || productInfo.stock == '') {
+        if (
+            productInfo.name == '' ||
+            productInfo.price == '' ||
+            category == '' ||
+            productInfo.stock == '' ||
+            productInfo.uom == '' ||
+            productInfo.vat_pct == '' ||
+            productInfo.mrp == ''
+        ) {
             showAlert('Fill all the fields', 'error');
             return;
         }
@@ -245,7 +259,8 @@ const AddProduct = ({ isOpen, onClose, categoryList, handleSubmit, selectedProdu
                             {/* Price */}
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                                    Price <span className="text-red-500"> ({totalPriceWithVat || 0}) *</span>
+                                    Price{' '}
+                                    <span className="text-red-500"> ({totalPriceWithVat?.toFixed(2) || 0}) *</span>
                                 </label>
                                 <input
                                     type="number"
@@ -345,7 +360,7 @@ const AddProduct = ({ isOpen, onClose, categoryList, handleSubmit, selectedProdu
                         {/* Product Image Upload */}
                         <div>
                             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                                Product Image <span className="text-red-500">*</span>
+                                Product Image
                             </label>
                             <div className="flex items-center gap-4">
                                 <label

@@ -1,9 +1,6 @@
 import prisma from '@/config/prisma';
 import { generateProductCode } from '@/utils';
-import { existsSync } from 'fs';
-import { mkdir, unlink, writeFile } from 'fs/promises';
 import { NextResponse } from 'next/server';
-import path from 'path';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -27,6 +24,7 @@ export const GET = async (req) => {
                 mrp: true,
                 stock: true,
                 unit_price: true,
+                trade_price: true,
                 vat_pct: true,
                 uom: true,
                 uom_name: true,
@@ -58,88 +56,39 @@ export const POST = async (req) => {
             return NextResponse.json({ message: 'Unauthorized user' }, { status: 400 });
         }
 
-        const formData = await req.formData();
-        const image = formData.get('image');
-        let fileUrl = '';
-        let fullPath = '';
-        const prodCode = await generateProductCode(formData.get('name')?.toString() || '');
+        const formData = await req.json();
 
-        if (image && typeof image == 'object' && 'size' in image && image.size > 0) {
-            const maxSize = 5 * 1024 * 1024;
-            if (image.size > maxSize) {
-                return NextResponse.json({ error: 'Image must be less than 5MB' }, { status: 400 });
-            }
+        const { category_id, name, image, prod_code, price, stock, mrp, vat_pct, uom, uom_name, discount } = formData;
 
-            const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'application/pdf'];
-            if (!allowedTypes.includes(image.type)) {
-                return NextResponse.json({ error: 'Invalid image type' }, { status: 400 });
-            }
-
-            const buffer = Buffer.from(await image.arrayBuffer());
-            const timestamp = Date.now();
-            const ext = path.extname(image.name);
-            const baseName = path
-                .basename(image.name, ext)
-                .replace(/\s+/g, '_')
-                .replace(/[^a-zA-Z0-9_-]/g, '')
-                .toLowerCase();
-            const fileName = `${baseName}_${timestamp}${ext}`;
-
-            const uploadDir = path.join(process.cwd(), 'public/uploads');
-            if (!existsSync(uploadDir)) {
-                await mkdir(uploadDir, { recursive: true });
-            }
-
-            fullPath = path.join(uploadDir, fileName);
-            await writeFile(fullPath, buffer);
-            fileUrl = `/uploads/${fileName}`;
-        }
-
-        const categoryId = Number(formData.get('category_id'));
-        const name = formData.get('name')?.toString() || '';
-        const prod_code = formData.get('prod_code')?.toString() || prodCode;
-        const unitPrice = formData.get('price')?.toString() || '';
-        const stock = formData.get('stock') || 0;
-        const mrp = formData.get('mrp')?.toString() || '';
-        const vat_pct = formData.get('vat_pct') || 0;
-        const uom = formData.get('uom') || 0;
-        const uom_name = formData.get('uom_name')?.toString() || 'Pcs';
-        const discount = formData.get('discount') || 0;
-
-        const tradePrice = (Number(unitPrice) * Number(vat_pct)) / 100 + Number(unitPrice) || 0;
-
-        if (!name || !unitPrice || !stock || !uom || isNaN(categoryId)) {
-            // Clean up uploaded file on bad input
-            await unlink(fullPath);
+        const tradePrice = (Number(price) * Number(vat_pct)) / 100 + Number(price) || 0;
+        const prodCode = await generateProductCode(name);
+        if (!name || !price || !stock || !uom || !vat_pct || !mrp || isNaN(category_id)) {
             return NextResponse.json({ error: 'Missing or invalid fields' }, { status: 400 });
         }
 
-        const result = await prisma.$transaction(async (tx) => {
-            const product = await tx.products.create({
-                data: {
-                    user_id: Number(userId),
-                    category_id: categoryId,
-                    name,
-                    prod_code,
-                    trade_price: tradePrice,
-                    stock: Number(stock),
-                    unit_price: Number(unitPrice),
-                    mrp: Number(mrp),
-                    vat_pct: Number(vat_pct),
-                    uom: Number(uom),
-                    uom_name,
-                    discount: Number(discount),
-                    img_url: fileUrl
-                },
-                select: {
-                    id: true,
-                    name: true
-                }
-            });
-            return product;
+        const product = await prisma.products.create({
+            data: {
+                user_id: Number(userId),
+                category_id: Number(category_id),
+                name,
+                prod_code: prod_code || prodCode,
+                trade_price: Number(tradePrice),
+                stock: Number(stock),
+                unit_price: Number(price),
+                mrp: Number(mrp),
+                vat_pct: Number(vat_pct),
+                uom: Number(uom),
+                uom_name,
+                discount: Number(discount),
+                img_url: image
+            },
+            select: {
+                id: true,
+                name: true
+            }
         });
 
-        return NextResponse.json({ message: 'Upload successful', success: true, data: result }, { status: 200 });
+        return NextResponse.json({ message: 'Upload successful', success: true, data: product }, { status: 200 });
     } catch (err) {
         console.error('Image upload error:', err);
         return NextResponse.json(
@@ -160,18 +109,15 @@ export const PUT = async (req) => {
             return NextResponse.json({ message: 'Unauthorized user' }, { status: 400 });
         }
 
-        const formData = await req.formData();
+        const formData = await req.json();
 
-        const image = formData.get('image');
-
-        const productId = Number(formData.get('id'));
-        if (isNaN(productId)) {
+        if (isNaN(formData.id)) {
             return NextResponse.json({ error: 'Invalid product ID' }, { status: 400 });
         }
 
         const existingProduct = await prisma.products.findFirst({
             where: {
-                id: productId,
+                id: Number(formData.id),
                 user_id: Number(userId)
             }
         });
@@ -180,86 +126,33 @@ export const PUT = async (req) => {
             return NextResponse.json({ error: 'Product not found' }, { status: 404 });
         }
 
-        let fileUrl = existingProduct.img_url;
+        const { category_id, name, image, prod_code, price, stock, mrp, vat_pct, uom, uom_name, discount } =
+            await formData;
 
-        if (image && typeof image == 'object' && 'size' in image && image.size > 0) {
-            const maxSize = 5 * 1024 * 1024;
-            if (image.size > maxSize) {
-                return NextResponse.json({ error: 'Image must be less than 5MB' }, { status: 400 });
-            }
+        const tradePrice = (Number(price) * Number(vat_pct)) / 100 + Number(price) || 0;
 
-            const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'application/pdf'];
-
-            if (!allowedTypes.includes(image.type)) {
-                return NextResponse.json({ error: 'Invalid image type' }, { status: 400 });
-            }
-
-            // Delete old image
-            if (existingProduct.img_url) {
-                const oldPath = path.join(process.cwd(), 'public', existingProduct.img_url);
-                try {
-                    if (existsSync(oldPath)) {
-                        await unlink(oldPath);
-                    }
-                } catch (err) {
-                    console.warn('Failed to delete old image:', err);
-                }
-            }
-
-            // Save new image
-            const buffer = Buffer.from(await image.arrayBuffer());
-            const timestamp = Date.now();
-            const ext = path.extname(image.name);
-            const baseName = path
-                .basename(image.name, ext)
-                .replace(/\s+/g, '_')
-                .replace(/[^a-zA-Z0-9_-]/g, '')
-                .toLowerCase();
-            const fileName = `${baseName}_${timestamp}${ext}`;
-
-            const uploadDir = path.join(process.cwd(), 'public/uploads');
-            await mkdir(uploadDir, { recursive: true });
-
-            const fullPath = path.join(uploadDir, fileName);
-            await writeFile(fullPath, buffer);
-
-            fileUrl = `/uploads/${fileName}`;
-        }
-
-        const categoryId = Number(formData.get('category_id'));
-        const name = formData.get('name')?.toString() || '';
-        const prodCode = formData.get('prod_code')?.toString() || '';
-        const unitPrice = formData.get('price')?.toString() || '';
-        const stock = formData.get('stock') || 0;
-        const mrp = formData.get('mrp')?.toString() || '';
-        const vat_pct = formData.get('vat_pct') || 0;
-        const uom = formData.get('uom') || 0;
-        const uom_name = formData.get('uom_name')?.toString() || 'PC';
-        const discount = formData.get('discount') || 0;
-        const tradePrice = (Number(unitPrice) * Number(vat_pct)) / 100 + Number(unitPrice) || 0;
-
-        if (!name || !unitPrice || !stock || !uom || isNaN(categoryId)) {
+        if (!name || !price || !stock || !uom || !vat_pct || !mrp || isNaN(category_id)) {
             return NextResponse.json({ error: 'Missing or invalid fields' }, { status: 400 });
         }
 
         const updatedProduct = await prisma.products.update({
             where: {
-                id: productId,
+                id: Number(formData.id),
                 user_id: Number(userId)
             },
             data: {
-                name,
-                prod_code: prodCode,
+                name: name,
+                prod_code: prod_code,
                 trade_price: Number(tradePrice),
                 stock: Number(stock),
-                unit_price: Number(unitPrice),
+                unit_price: Number(price),
                 mrp: Number(mrp),
                 vat_pct: Number(vat_pct),
                 uom: Number(uom),
                 uom_name,
                 discount: Number(discount),
-                category_id: categoryId,
-                img_url: fileUrl
+                category_id: Number(category_id),
+                img_url: image
             },
             select: {
                 id: true,

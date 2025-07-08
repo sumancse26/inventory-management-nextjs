@@ -53,7 +53,7 @@ model products {
   user_id          Int
   category_id      Int
   name             String             @db.VarChar(100)
-  img_url          String?            @default("") @db.VarChar(100)
+  img_url          String?            @default("") @db.Text
   created_at       DateTime           @default(now())
   updated_at       DateTime           @updatedAt
   discount         Int                @default(0)

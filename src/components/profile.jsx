@@ -75,50 +75,7 @@ const UpdateProfile = () => {
         };
 
         reader.readAsDataURL(file);
-
-        // if (file) {
-        //     setProfileImage(file);
-        //     setPreview(URL.createObjectURL(file));
-        // }
     };
-
-    // const handleSubmit = async (e) => {
-    //     e.preventDefault();
-
-    //     try {
-    //         start();
-
-    //         let imageUrl = '';
-
-    //         if (profileImage instanceof File) {
-    //             alert(2);
-    //             imageUrl = await uploadFile(profileImage);
-    //         }
-    //         console.log('imageUrl', imageUrl);
-
-    //         const payload = {
-    //             first_name: formData.first_name,
-    //             last_name: formData.last_name,
-    //             email: formData.email,
-    //             mobile: formData.mobile,
-    //             imageUrl: imageUrl
-    //         };
-    //         const res = await updateProfile(payload);
-    //         stop();
-    //         if (res.success) {
-    //             showAlert('Profile updated successfully', 'success');
-    //             router.push('/dashboard');
-    //         }
-    //     } catch (err) {
-    //         stop();
-    //         showAlert('Failed to update profile', 'error');
-    //         return NextResponse.json({
-    //             success: false,
-    //             message: 'Failed to update profile',
-    //             error: err.message
-    //         });
-    //     }
-    // };
 
     const handleSubmit = async (e) => {
         e.preventDefault();

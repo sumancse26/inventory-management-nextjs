@@ -149,6 +149,12 @@ const ProductList = () => {
                                                     Price (TK)
                                                 </th>
                                                 <th className="px-1 py-2 font-semibold text-xs uppercase tracking-wider text-gray-800 dark:text-neutral-200  text-end">
+                                                    TP (TK)
+                                                </th>
+                                                <th className="px-1 py-2 font-semibold text-xs uppercase tracking-wider text-gray-800 dark:text-neutral-200  text-end">
+                                                    MRP (TK)
+                                                </th>
+                                                <th className="px-1 py-2 font-semibold text-xs uppercase tracking-wider text-gray-800 dark:text-neutral-200  text-end">
                                                     Stock
                                                 </th>
                                                 <th className="px-1 py-2 font-semibold text-xs uppercase tracking-wider text-gray-800 dark:text-neutral-200  text-center">
@@ -188,6 +194,12 @@ const ProductList = () => {
                                                     </td>
                                                     <td className="px-1 py-2 text-gray-600 dark:text-neutral-300 text-end">
                                                         {product.unit_price || 0}
+                                                    </td>
+                                                    <td className="px-1 py-2 text-gray-600 dark:text-neutral-300 text-end">
+                                                        {product.trade_price || 0}
+                                                    </td>
+                                                    <td className="px-1 py-2 text-gray-600 dark:text-neutral-300 text-end">
+                                                        {product.mrp || 0}
                                                     </td>
                                                     <td className="px-1 py-2 text-gray-600 dark:text-neutral-300 text-end">
                                                         {product.stock || 0} {product.uom_name || ''}

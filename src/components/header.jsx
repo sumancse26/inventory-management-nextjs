@@ -16,8 +16,6 @@ const Header = ({ logoHandler }) => {
     const { showAlert } = useAlert();
     const { start, stop } = useApiLoader();
 
-    // Close dropdown when clicking outside
-
     useEffect(() => {
         fetchProfile();
     }, []);
